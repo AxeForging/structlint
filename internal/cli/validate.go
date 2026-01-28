@@ -6,8 +6,8 @@ import (
 	"log/slog"
 
 	"github.com/urfave/cli/v3"
-	"github.com/youngestaxe/structlint/internal/logging"
-	"github.com/youngestaxe/structlint/internal/validator"
+	"github.com/AxeForging/structlint/internal/logging"
+	"github.com/AxeForging/structlint/internal/validator"
 )
 
 // NewValidateCmd creates the main validation command.

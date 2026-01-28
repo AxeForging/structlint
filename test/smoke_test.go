@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/youngestaxe/structlint/internal/app"
+	"github.com/AxeForging/structlint/internal/app"
 )
 
 func TestRootRuns(t *testing.T) {

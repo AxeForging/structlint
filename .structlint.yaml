@@ -11,6 +11,8 @@ dir_structure:
     - "scripts/**"          # Build and utility scripts
     - "bin/**"              # Built binaries
     - "dist/**"             # Distribution files
+    - ".claude/**"          # Claude Code configuration
+    - ".github/**"          # GitHub configuration
   disallowedPaths:
     - "vendor/**"           # Vendor dependencies
     - "node_modules/**"     # Node.js dependencies
