@@ -27,7 +27,7 @@
 
 ```bash
 # Install
-go install github.com/youngestaxe/structlint@latest
+go install github.com/AxeForging/structlint@latest
 
 # Create a basic config
 cat > .structlint.yaml << 'EOF'
@@ -166,7 +166,7 @@ After: "Create a new API handler following our .structlint.yaml structure:
 
 ```bash
 # Clone and build
-git clone https://github.com/youngestaxe/structlint.git
+git clone https://github.com/AxeForging/structlint.git
 cd structlint
 make build
 

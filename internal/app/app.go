@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/urfave/cli/v3"
-	clilib "github.com/youngestaxe/structlint/internal/cli"
+	clilib "github.com/AxeForging/structlint/internal/cli"
 )
 
 // New constructs the root command for the application.

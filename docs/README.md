@@ -864,7 +864,7 @@ jobs:
     - uses: actions/checkout@v3
     
     - name: Install structlint
-      run: go install github.com/youngestaxe/structlint@latest
+      run: go install github.com/AxeForging/structlint@latest
     
     - name: Validate project structure
       run: |

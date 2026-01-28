@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/youngestaxe/structlint/internal/app"
+	"github.com/AxeForging/structlint/internal/app"
 )
 
 func main() {

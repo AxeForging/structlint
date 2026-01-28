@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/urfave/cli/v3"
-	"github.com/youngestaxe/structlint/internal/build"
+	"github.com/AxeForging/structlint/internal/build"
 )
 
 // NewVersionCmd prints version metadata injected at build time via ldflags.

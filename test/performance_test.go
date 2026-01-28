@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/youngestaxe/structlint/internal/config"
-	"github.com/youngestaxe/structlint/internal/logging"
-	"github.com/youngestaxe/structlint/internal/validator"
+	"github.com/AxeForging/structlint/internal/config"
+	"github.com/AxeForging/structlint/internal/logging"
+	"github.com/AxeForging/structlint/internal/validator"
 )
 
 // TestLargeScaleViolations tests behavior with many violations
