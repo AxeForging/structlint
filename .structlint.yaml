@@ -1,0 +1,126 @@
+# structlint configuration for this project
+# This file defines the standards for our own project structure
+
+dir_structure:
+  allowedPaths:
+    - "."                    # Root directory
+    - "cmd/**"              # Command entry points
+    - "internal/**"         # Internal packages
+    - "test/**"             # Test files
+    - "docs/**"             # Documentation
+    - "scripts/**"          # Build and utility scripts
+    - "bin/**"              # Built binaries
+    - "dist/**"             # Distribution files
+  disallowedPaths:
+    - "vendor/**"           # Vendor dependencies
+    - "node_modules/**"     # Node.js dependencies
+    - "tmp/**"              # Temporary directories
+    - "temp/**"             # Temporary directories
+    - ".git/**"             # Git internal files
+    - "*.log"               # Log files
+  requiredPaths:
+    - "cmd"                 # Must have cmd directory
+    - "internal"            # Must have internal directory
+    - "test"                # Must have test directory
+
+file_naming_pattern:
+  allowed:
+    # Go files
+    - "*.go"
+    - "*.mod"
+    - "*.sum"
+    
+    # Configuration files
+    - "*.yaml"
+    - "*.yml"
+    - "*.json"
+    - "*.toml"
+    
+    # Documentation
+    - "*.md"
+    - "*.txt"
+    - "README*"
+    - "LICENSE*"
+    - "CHANGELOG*"
+    - "CONTRIBUTING*"
+    
+    # Build and deployment
+    - "Makefile"
+    - "Dockerfile*"
+    - "*.sh"
+    - "*.bat"
+    
+    # IDE and tooling
+    - ".gitignore"
+    - ".editorconfig"
+    - ".golangci.yml"
+    - ".goreleaser.yaml"
+    - ".github/**"
+    
+    # Other common files
+    - "go.work"
+    - "go.work.sum"
+  disallowed:
+    # Environment and secrets
+    - "*.env*"
+    - ".env*"
+    - "*.key"
+    - "*.pem"
+    - "*.p12"
+    
+    # Temporary and cache files
+    - "*.log"
+    - "*.tmp"
+    - "*.temp"
+    - "*~"
+    - "*.swp"
+    - "*.swo"
+    - "*.bak"
+    - "*.backup"
+    
+    # OS-specific files
+    - ".DS_Store"
+    - "Thumbs.db"
+    - "desktop.ini"
+    
+    # IDE-specific files
+    - "*.idea/**"
+    - "*.vscode/**"
+    - "*.sublime-*"
+  required:
+    # Essential Go project files
+    - "go.mod"              # Go module file
+    - "README.md"           # Project documentation
+    - ".gitignore"          # Git ignore file
+    - "*.go"                # At least one Go source file
+
+ignore:
+  # Version control
+  - ".git"
+  - ".svn"
+  - ".hg"
+  
+  # Dependencies
+  - "vendor"
+  - "node_modules"
+  - "bower_components"
+  
+  # Build outputs
+  - "bin"
+  - "dist"
+  - "build"
+  - "target"
+  
+  # IDE and editor files
+  - ".idea"
+  - ".vscode"
+  - "*.sublime-*"
+  
+  # OS files
+  - ".DS_Store"
+  - "Thumbs.db"
+  
+  # Temporary files
+  - "*.log"
+  - "*.tmp"
+  - "*.temp"

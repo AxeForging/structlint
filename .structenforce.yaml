@@ -1,0 +1,73 @@
+# structenforce.yaml - STRICT enforcement mode
+# This configuration is overly restrictive and enforces exact structure
+# No new folders allowed beyond what's explicitly listed!
+
+dir_structure:
+  allowedPaths:
+    # ONLY these exact paths are allowed - nothing else!
+    - "."                    # Root directory only
+    - "cmd"                  # cmd directory
+    - "cmd/structlint"       # cmd subdirectory
+    - "internal"             # internal directory
+    - "internal/app"         # internal subdirectories
+    - "internal/build"
+    - "internal/cli"
+    - "internal/config"
+    - "internal/logging"
+    - "internal/validator"
+    - "test"                 # test directory
+    - "docs"                 # docs directory (if it exists)
+    - "scripts"              # scripts directory (if it exists)
+    # NO wildcards like "cmd/**" - be explicit!
+  disallowedPaths:
+    # Explicitly disallow common violations
+    - "vendor/**"
+    - "node_modules/**"
+    - "tmp/**"
+    - "temp/**"
+    - ".git/**"
+    - "*.log"
+  requiredPaths:
+    # These MUST exist
+    - "cmd"
+    - "internal" 
+    - "test"
+
+file_naming_pattern:
+  allowed:
+    # ONLY these exact patterns allowed
+    - "*.go"                 # Go source files
+    - "*.mod"                # Go module file
+    - "*.sum"                # Go sum file
+    - "*.yaml"               # YAML config files
+    - "*.yml"                # YAML config files
+    - "*.md"                 # Markdown files
+    - "Makefile"             # Makefile
+    - ".gitignore"           # Git ignore
+    - ".structlint.yaml"     # Our config
+    - ".structenforce.yaml"  # Our strict config
+    - "validation-report.json" # Validation reports
+    - "large-scale-report.json"
+  disallowed:
+    # Strictly forbid these
+    - "*.env*"
+    - "*.log"
+    - "*.tmp"
+    - "*~"
+    - "*.swp"
+    - "*.swo"
+    - "*.bak"
+    - "*.backup"
+    - ".DS_Store"
+    - "Thumbs.db"
+  required:
+    # These MUST exist
+    - "go.mod"
+    - "README.md"
+    - ".gitignore"
+    - "*.go"                 # At least one Go file
+
+ignore:
+  # Minimal ignore list - only what's absolutely necessary
+  - ".git"
+  - "bin"
