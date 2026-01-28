@@ -1,194 +1,560 @@
 # structlint
 
-**A powerful CLI tool for validating and enforcing directory structure and file naming patterns in your projects.**
+A CLI tool for validating and enforcing directory structure and file naming patterns in your projects.
 
-## 🎯 What Problems Does This Tool Solve?
-
-### **For Development Teams:**
-- **Enforces consistent project structure** across team members
-- **Prevents accidental violations** of coding standards
-- **Catches structural issues early** in development
-- **Ensures required files/directories exist** (like `README.md`, `go.mod`, etc.)
-- **Blocks forbidden patterns** (like `.env` files in wrong places)
-
-### **For AI Assistants & Code Generation:**
-- **Provides clear project structure expectations** for AI tools
-- **Helps AI understand where to place new files** and directories
-- **Enables AI to follow your project's conventions** automatically
-- **Reduces AI-generated code that violates your standards**
-
-### **For CI/CD Pipelines:**
-- **Validates project structure** before deployment
-- **Fails builds** when structure violations are detected
-- **Generates structured reports** for compliance tracking
-- **Integrates seamlessly** with existing workflows
-
-## 🚀 Quick Start
+## Installation
 
 ```bash
-# Install
 go install github.com/AxeForging/structlint@latest
-
-# Create a basic config
-cat > .structlint.yaml << 'EOF'
-dir_structure:
-  allowedPaths: ["cmd/**", "internal/**", "test/**"]
-  disallowedPaths: ["vendor/**", "tmp/**"]
-file_naming_pattern:
-  allowed: ["*.go", "*.md", "*.yaml"]
-  disallowed: ["*.env*", "*.log"]
-ignore: [".git", "bin"]
-EOF
-
-# Validate your project
-structlint validate
 ```
 
-## 📋 Features
+<details>
+<summary><strong>Other Installation Methods</strong></summary>
 
-### **Directory Structure Validation**
-- ✅ **Allowed paths**: Define what directories are permitted
-- ❌ **Disallowed paths**: Explicitly forbid certain directories
-- 🔒 **Required paths**: Enforce that essential directories exist
-- 🚫 **Ignore patterns**: Skip validation for specific paths
+### From Binary
 
-### **File Naming Pattern Validation**
-- ✅ **Allowed patterns**: Define permitted file naming conventions
-- ❌ **Disallowed patterns**: Block forbidden file types/names
-- 🔒 **Required files**: Ensure essential files exist (README, configs, etc.)
-- 🌐 **Glob support**: Use patterns like `*.go`, `src/**/*.ts`, `tests/*_test.go`
-
-### **Smart Reporting**
-- 📊 **Grouped violations**: Similar issues grouped together for readability
-- 📈 **Summary statistics**: Quick overview of validation results
-- 📄 **JSON reports**: Machine-readable output for CI/CD integration
-- 🔇 **Silent mode**: Quiet operation for automated environments
-
-### **Flexible Configuration**
-- 📝 **YAML/JSON configs**: Human-readable configuration files
-- 🎛️ **Environment variables**: Override settings via env vars
-- 🏗️ **Multiple strictness levels**: From permissive to ultra-strict
-- 🔧 **Project-specific rules**: Tailored for Go, Node.js, Python, etc.
-
-## 🎨 Configuration Examples
-
-### **Basic Go Project**
-```yaml
-dir_structure:
-  allowedPaths: ["cmd/**", "internal/**", "pkg/**", "test/**"]
-  disallowedPaths: ["vendor/**", "tmp/**"]
-file_naming_pattern:
-  allowed: ["*.go", "*.mod", "*.sum", "README.md", ".gitignore"]
-  disallowed: ["*.env*", "*.log"]
-ignore: [".git", "vendor"]
-```
-
-### **Strict Enforcement Mode**
-```yaml
-dir_structure:
-  allowedPaths: 
-    - "."
-    - "cmd"
-    - "cmd/myapp"  # Explicit paths only
-    - "internal"
-    - "internal/app"
-  requiredPaths: ["cmd", "internal", "test"]
-file_naming_pattern:
-  allowed: ["*.go", "go.mod", "README.md", ".gitignore"]
-  required: ["go.mod", "README.md", "*.go"]
-ignore: [".git"]
-```
-
-## 🛠️ Usage
-
-### **Command Line Options**
-```bash
-structlint validate [options]
-
-Options:
-  --path string         Path to validate (default: ".")
-  --config string       Config file path (default: ".structlint.yaml")
-  --json-output string  Save JSON report to file
-  --silent              Suppress output except JSON report
-  --group-violations    Group violations by type (default: true)
-  --verbose             Show all allowed files (default: false)
-```
-
-### **Environment Variables**
-```bash
-export STRUCTLINT_CONFIG=".structlint.yaml"
-export STRUCTLINT_PATH="/path/to/project"
-export STRUCTLINT_JSON_OUTPUT="report.json"
-export STRUCTLINT_SILENT="true"
-```
-
-### **CI/CD Integration**
-```yaml
-# GitHub Actions example
-- name: Validate Project Structure
-  run: |
-    structlint validate --config .structlint.yaml --json-output validation-report.json
-    if [ $? -ne 0 ]; then
-      echo "Project structure validation failed"
-      exit 1
-    fi
-```
-
-## 📚 Documentation
-
-For comprehensive examples and advanced configurations, see the [docs/](./docs/) directory:
-
-- **[Configuration Examples](./docs/README.md)** - Detailed examples for different project types
-- **[Go Projects](./docs/README.md#go-projects)** - Go-specific configurations
-- **[Node.js Projects](./docs/README.md#nodejs-projects)** - JavaScript/TypeScript configurations  
-- **[Python Projects](./docs/README.md#python-projects)** - Python-specific configurations
-- **[Strictness Levels](./docs/README.md#strictness-levels)** - From permissive to ultra-strict
-
-## 🤖 AI Integration Benefits
-
-### **For AI Code Generation:**
-When AI tools understand your project structure, they can:
-- **Place files in correct directories** automatically
-- **Follow your naming conventions** without guidance
-- **Respect your project boundaries** and organization
-- **Generate code that fits your existing structure**
-
-### **Example AI Prompt Enhancement:**
-```
-Before: "Create a new API handler"
-After: "Create a new API handler following our .structlint.yaml structure:
-- Place in internal/api/handlers/
-- Use snake_case naming
-- Include proper tests in test/api/handlers/"
-```
-
-## 🏗️ Building from Source
+Download from [Releases](https://github.com/AxeForging/structlint/releases):
 
 ```bash
-# Clone and build
+# Linux (amd64)
+curl -LO https://github.com/AxeForging/structlint/releases/latest/download/structlint-linux-amd64.tar.gz
+tar -xzf structlint-linux-amd64.tar.gz
+sudo mv structlint /usr/local/bin/
+
+# macOS (Apple Silicon)
+curl -LO https://github.com/AxeForging/structlint/releases/latest/download/structlint-darwin-arm64.tar.gz
+tar -xzf structlint-darwin-arm64.tar.gz
+sudo mv structlint /usr/local/bin/
+
+# Windows (PowerShell)
+Invoke-WebRequest -Uri "https://github.com/AxeForging/structlint/releases/latest/download/structlint-windows-amd64.zip" -OutFile structlint.zip
+Expand-Archive structlint.zip -DestinationPath .
+```
+
+### From Source
+
+```bash
 git clone https://github.com/AxeForging/structlint.git
 cd structlint
 make build
-
-# Run tests
-make test
-
-# Self-validate
-make test-self
+./bin/structlint version
 ```
 
-## 📄 License
+</details>
 
-MIT License - see [LICENSE](./LICENSE) for details.
+## Quick Start
 
-## 🤝 Contributing
+```bash
+# Create config
+cat > .structlint.yaml << 'EOF'
+dir_structure:
+  allowedPaths: [".", "cmd/**", "internal/**", "pkg/**"]
+  disallowedPaths: ["vendor/**", "tmp/**"]
+file_naming_pattern:
+  allowed: ["*.go", "*.yaml", "*.md", "Makefile"]
+  disallowed: ["*.env*", "*.log"]
+ignore: [".git", "vendor", "bin"]
+EOF
 
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Ensure all tests pass: `make test`
-5. Submit a pull request
+# Validate
+structlint validate
+```
 
----
+**Output:**
+```
+--- Validation Summary ---
+✓ 42 files/directories passed validation
+✗ 0 violations found
+🎉 All files and directories comply with the rules!
+```
 
-**Ready to enforce structure standards in your projects?** Start with the [configuration examples](./docs/README.md) and customize for your needs!
+## Why structlint?
+
+| Problem | Solution |
+|---------|----------|
+| Inconsistent project structure across team | Enforce allowed/disallowed paths |
+| Sensitive files committed (.env, keys) | Block forbidden file patterns |
+| Missing essential files (README, configs) | Require specific files |
+| AI tools placing files incorrectly | Clear structure rules for AI context |
+| CI/CD structural compliance | JSON reports + exit codes |
+
+## Configuration
+
+<details>
+<summary><strong>Complete Configuration Reference</strong></summary>
+
+```yaml
+# .structlint.yaml
+
+# Directory structure rules
+dir_structure:
+  # Directories that ARE allowed (glob patterns)
+  allowedPaths:
+    - "."              # Root directory
+    - "cmd/**"         # cmd/ and all subdirectories
+    - "internal/**"    # internal/ and all subdirectories
+    - "pkg/**"         # pkg/ and all subdirectories
+    - "test/**"        # test/ and all subdirectories
+    - "docs/**"        # docs/ and all subdirectories
+
+  # Directories that are NOT allowed (violations if found)
+  disallowedPaths:
+    - "vendor/**"      # No vendor directory
+    - "node_modules/**"
+    - "tmp/**"
+    - "temp/**"
+
+  # Directories that MUST exist
+  requiredPaths:
+    - "cmd"            # Must have cmd/
+    - "internal"       # Must have internal/
+
+# File naming rules
+file_naming_pattern:
+  # Files that ARE allowed (glob patterns)
+  allowed:
+    - "*.go"
+    - "*.mod"
+    - "*.sum"
+    - "*.yaml"
+    - "*.yml"
+    - "*.json"
+    - "*.md"
+    - "*.txt"
+    - "Makefile"
+    - "Dockerfile*"
+    - ".gitignore"
+    - ".golangci.yml"
+
+  # Files that are NOT allowed (violations if found)
+  disallowed:
+    - "*.env*"         # No .env files
+    - "*.log"          # No log files
+    - "*.tmp"
+    - "*.bak"
+    - "*~"             # No backup files
+    - ".DS_Store"
+    - "Thumbs.db"
+
+  # Files that MUST exist
+  required:
+    - "go.mod"         # Must have go.mod
+    - "README.md"      # Must have README
+    - "*.go"           # At least one .go file
+
+# Paths to completely skip during validation
+ignore:
+  - ".git"
+  - "vendor"
+  - "node_modules"
+  - "bin"
+  - "dist"
+```
+
+</details>
+
+<details>
+<summary><strong>Glob Pattern Syntax</strong></summary>
+
+| Pattern | Matches | Example |
+|---------|---------|---------|
+| `*` | Any characters (not `/`) | `*.go` → `main.go`, `test.go` |
+| `**` | Any characters (including `/`) | `cmd/**` → `cmd/app/main.go` |
+| `?` | Single character | `test?.go` → `test1.go` |
+| `[abc]` | Any char in set | `[mt]est.go` → `test.go`, `mest.go` |
+| `[!abc]` | Any char NOT in set | `[!t]est.go` → `best.go` |
+| `{a,b}` | Either a or b | `*.{go,md}` → `main.go`, `README.md` |
+
+</details>
+
+## Project Type Examples
+
+<details>
+<summary><strong>Go Project</strong></summary>
+
+```yaml
+# .structlint.yaml for Go projects
+dir_structure:
+  allowedPaths:
+    - "."
+    - "cmd/**"
+    - "internal/**"
+    - "pkg/**"
+    - "api/**"
+    - "web/**"
+    - "configs/**"
+    - "scripts/**"
+    - "test/**"
+    - "docs/**"
+    - ".github/**"
+  disallowedPaths:
+    - "vendor/**"
+    - "tmp/**"
+  requiredPaths:
+    - "cmd"
+
+file_naming_pattern:
+  allowed:
+    - "*.go"
+    - "*.mod"
+    - "*.sum"
+    - "*.yaml"
+    - "*.yml"
+    - "*.json"
+    - "*.md"
+    - "*.sql"
+    - "*.sh"
+    - "Makefile"
+    - "Dockerfile*"
+    - ".gitignore"
+    - ".golangci.yml"
+    - ".goreleaser.yaml"
+    - "go.work"
+  disallowed:
+    - "*.env*"
+    - "*.log"
+    - "*.tmp"
+    - ".DS_Store"
+  required:
+    - "go.mod"
+    - "README.md"
+
+ignore:
+  - ".git"
+  - "vendor"
+  - "bin"
+  - "dist"
+```
+
+</details>
+
+<details>
+<summary><strong>Node.js / TypeScript Project</strong></summary>
+
+```yaml
+# .structlint.yaml for Node.js/TypeScript projects
+dir_structure:
+  allowedPaths:
+    - "."
+    - "src/**"
+    - "tests/**"
+    - "lib/**"
+    - "config/**"
+    - "scripts/**"
+    - "public/**"
+    - ".github/**"
+  disallowedPaths:
+    - "node_modules/**"
+    - "dist/**"
+    - "build/**"
+    - "coverage/**"
+
+file_naming_pattern:
+  allowed:
+    - "*.ts"
+    - "*.tsx"
+    - "*.js"
+    - "*.jsx"
+    - "*.json"
+    - "*.yaml"
+    - "*.yml"
+    - "*.md"
+    - "*.css"
+    - "*.scss"
+    - "*.html"
+    - ".gitignore"
+    - ".eslintrc*"
+    - ".prettierrc*"
+    - "tsconfig*.json"
+    - "jest.config.*"
+    - "vite.config.*"
+    - "Dockerfile*"
+  disallowed:
+    - "*.env*"
+    - "*.log"
+    - ".DS_Store"
+  required:
+    - "package.json"
+    - "README.md"
+
+ignore:
+  - "node_modules"
+  - "dist"
+  - ".git"
+  - "coverage"
+```
+
+</details>
+
+<details>
+<summary><strong>Python Project</strong></summary>
+
+```yaml
+# .structlint.yaml for Python projects
+dir_structure:
+  allowedPaths:
+    - "."
+    - "src/**"
+    - "tests/**"
+    - "docs/**"
+    - "scripts/**"
+    - "config/**"
+    - ".github/**"
+  disallowedPaths:
+    - "venv/**"
+    - ".venv/**"
+    - "__pycache__/**"
+    - "*.egg-info/**"
+    - ".pytest_cache/**"
+    - ".mypy_cache/**"
+
+file_naming_pattern:
+  allowed:
+    - "*.py"
+    - "*.pyi"
+    - "*.yaml"
+    - "*.yml"
+    - "*.json"
+    - "*.toml"
+    - "*.txt"
+    - "*.md"
+    - "*.ini"
+    - "*.cfg"
+    - "Makefile"
+    - "Dockerfile*"
+    - ".gitignore"
+    - "pyproject.toml"
+    - "setup.py"
+    - "setup.cfg"
+    - "requirements*.txt"
+  disallowed:
+    - "*.env*"
+    - "*.log"
+    - "*.pyc"
+    - ".DS_Store"
+  required:
+    - "README.md"
+    - "*.py"
+
+ignore:
+  - "venv"
+  - ".venv"
+  - "__pycache__"
+  - ".git"
+  - ".pytest_cache"
+```
+
+</details>
+
+<details>
+<summary><strong>Monorepo</strong></summary>
+
+```yaml
+# .structlint.yaml for monorepos
+dir_structure:
+  allowedPaths:
+    - "."
+    - "apps/**"
+    - "packages/**"
+    - "libs/**"
+    - "services/**"
+    - "tools/**"
+    - "scripts/**"
+    - "docs/**"
+    - "infra/**"
+    - ".github/**"
+  disallowedPaths:
+    - "node_modules/**"
+    - "vendor/**"
+    - "dist/**"
+    - "build/**"
+  requiredPaths:
+    - "apps"
+    - "packages"
+
+file_naming_pattern:
+  allowed:
+    - "*.go"
+    - "*.ts"
+    - "*.js"
+    - "*.json"
+    - "*.yaml"
+    - "*.yml"
+    - "*.md"
+    - "*.toml"
+    - "Makefile"
+    - "Dockerfile*"
+    - ".gitignore"
+    - "go.work"
+    - "pnpm-workspace.yaml"
+    - "turbo.json"
+  disallowed:
+    - "*.env*"
+    - "*.log"
+  required:
+    - "README.md"
+
+ignore:
+  - ".git"
+  - "node_modules"
+  - "vendor"
+  - "dist"
+```
+
+</details>
+
+## CLI Reference
+
+```bash
+# Basic validation
+structlint validate
+
+# With specific config
+structlint validate --config .structlint.yaml
+
+# Generate JSON report
+structlint validate --json-output report.json
+
+# Verbose output
+structlint validate --log-level debug
+
+# Silent mode (exit code only)
+structlint validate --silent
+
+# Show version
+structlint version
+
+# Shell completions
+structlint completion bash > /etc/bash_completion.d/structlint
+structlint completion zsh > "${fpath[1]}/_structlint"
+structlint completion fish > ~/.config/fish/completions/structlint.fish
+```
+
+<details>
+<summary><strong>Environment Variables</strong></summary>
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `STRUCTLINT_CONFIG` | Config file path | `.structlint.yaml` |
+| `STRUCTLINT_LOG_LEVEL` | Log level | `debug`, `info`, `warn`, `error` |
+| `STRUCTLINT_NO_COLOR` | Disable colors | `true` |
+
+</details>
+
+<details>
+<summary><strong>Exit Codes</strong></summary>
+
+| Code | Meaning |
+|------|---------|
+| `0` | Validation passed |
+| `1` | Validation failed (violations found) |
+| `2` | Configuration error |
+| `3` | Runtime error |
+
+</details>
+
+## CI/CD Integration
+
+<details>
+<summary><strong>GitHub Actions</strong></summary>
+
+```yaml
+name: Validate Structure
+
+on: [push, pull_request]
+
+jobs:
+  structlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Install structlint
+        run: go install github.com/AxeForging/structlint@latest
+
+      - name: Validate structure
+        run: structlint validate --json-output report.json
+
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: structlint-report
+          path: report.json
+```
+
+</details>
+
+<details>
+<summary><strong>GitLab CI</strong></summary>
+
+```yaml
+structlint:
+  image: golang:1.24
+  stage: test
+  script:
+    - go install github.com/AxeForging/structlint@latest
+    - structlint validate --json-output report.json
+  artifacts:
+    when: always
+    paths:
+      - report.json
+```
+
+</details>
+
+<details>
+<summary><strong>Pre-commit Hook</strong></summary>
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: local
+    hooks:
+      - id: structlint
+        name: structlint
+        entry: structlint validate --silent
+        language: system
+        pass_filenames: false
+        always_run: true
+```
+
+</details>
+
+## JSON Report Format
+
+```json
+{
+  "successes": 42,
+  "failures": 2,
+  "errors": [
+    "Directory not in allowed list: tmp",
+    "Disallowed file found: .env.local"
+  ],
+  "summary": {
+    "directories_checked": 15,
+    "files_checked": 27
+  }
+}
+```
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [Getting Started](docs/user/getting-started.md) | Installation and quick start |
+| [Configuration](docs/user/configuration.md) | Complete config reference |
+| [CLI Reference](docs/user/cli-reference.md) | Commands and options |
+| [CI/CD Integration](docs/user/ci-cd-integration.md) | Pipeline examples |
+| [AI Overview](docs/AI/overview.md) | AI context and architecture |
+| [Codebase Map](docs/AI/codebase-map.md) | File structure explained |
+| [Contributing](docs/AI/contributing.md) | How to contribute |
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.

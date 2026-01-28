@@ -1,86 +1,256 @@
 # structlint - AI Context Overview
 
+> **For AI assistants:** This document provides the context you need to understand, use, and modify structlint.
+
 ## What is structlint?
 
-structlint is a CLI tool written in Go that validates directory structures and file naming patterns. It helps enforce consistent project organization.
+structlint is a CLI tool that validates project directory structures and file naming patterns against configurable rules. It helps enforce consistent project organization.
 
-## Key Concepts
+## Quick Reference
 
-1. **Configuration-driven** - All rules defined in `.structlint.yaml`
-2. **Glob patterns** - Uses glob syntax for path matching
-3. **Three rule types**:
-   - `dir_structure` - Directory validation
-   - `file_naming_pattern` - File validation
-   - `ignore` - Paths to skip
+```bash
+# Validate current directory
+structlint validate
+
+# With config file
+structlint validate --config .structlint.yaml
+
+# JSON output for parsing
+structlint validate --json-output report.json
+
+# Check version
+structlint version
+```
+
+## Configuration Structure
+
+```yaml
+# .structlint.yaml
+dir_structure:
+  allowedPaths: []      # Glob patterns - directories allowed
+  disallowedPaths: []   # Glob patterns - directories forbidden
+  requiredPaths: []     # Exact paths - must exist
+
+file_naming_pattern:
+  allowed: []           # Glob patterns - files allowed
+  disallowed: []        # Glob patterns - files forbidden
+  required: []          # Glob patterns - must have at least one match
+
+ignore: []              # Paths to skip entirely
+```
+
+## Key Behaviors
+
+<details>
+<summary><strong>How allowedPaths works</strong></summary>
+
+If `allowedPaths` is non-empty, ONLY directories matching those patterns are allowed. Everything else is a violation.
+
+```yaml
+# Only cmd/, internal/, and their subdirectories allowed
+allowedPaths:
+  - "."          # Root is always needed
+  - "cmd/**"
+  - "internal/**"
+```
+
+If `allowedPaths` is empty or omitted, all directories are allowed (no restrictions).
+
+</details>
+
+<details>
+<summary><strong>How disallowedPaths works</strong></summary>
+
+Any directory matching `disallowedPaths` patterns is a violation.
+
+```yaml
+# These directories are forbidden
+disallowedPaths:
+  - "vendor/**"
+  - "node_modules/**"
+  - "tmp/**"
+```
+
+</details>
+
+<details>
+<summary><strong>How ignore works</strong></summary>
+
+Paths in `ignore` are completely skipped - not validated at all.
+
+```yaml
+# These paths won't be checked
+ignore:
+  - ".git"
+  - "vendor"
+  - "bin"
+```
+
+</details>
+
+<details>
+<summary><strong>Glob pattern syntax</strong></summary>
+
+| Pattern | Meaning |
+|---------|---------|
+| `*` | Any chars except `/` |
+| `**` | Any chars including `/` |
+| `?` | Single char |
+| `[abc]` | Char in set |
+| `{a,b}` | Either a or b |
+
+Examples:
+- `*.go` - Go files in current dir
+- `**/*.go` - Go files anywhere
+- `cmd/**` - cmd/ and all subdirs
+- `test/*_test.go` - Test files in test/
+
+</details>
 
 ## Architecture
 
 ```
-cmd/structlint/main.go     Entry point
-internal/
-  app/app.go               Root command construction
-  cli/
-    root.go                CLI setup, global flags
-    validate.go            Validate command
-    version.go             Version command
-    completion.go          Shell completion
-  config/config.go         Config loading (YAML/JSON)
-  validator/
-    validator.go           Core validation logic
-    types.go               JSONReport struct
-    summary.go             Result printing
-  build/info.go            Version info (LDFLAGS)
-  logging/logging.go       Structured logging
-test/                      Integration tests
+structlint/
+├── cmd/structlint/main.go      # Entry point
+├── internal/
+│   ├── app/app.go              # Root CLI command
+│   ├── cli/
+│   │   ├── root.go             # Global flags, setup
+│   │   ├── validate.go         # validate command
+│   │   ├── version.go          # version command
+│   │   └── completion.go       # shell completions
+│   ├── config/config.go        # Config loading
+│   ├── validator/
+│   │   ├── validator.go        # Core validation
+│   │   ├── types.go            # JSONReport struct
+│   │   └── summary.go          # Output formatting
+│   ├── build/info.go           # Version info
+│   └── logging/logging.go      # Logging setup
+└── test/                       # Integration tests
 ```
 
-## How Validation Works
+## Common Tasks for AI
 
-1. Load config from file
-2. Walk filesystem from target path
-3. For each directory: check against `allowedPaths` and `disallowedPaths`
-4. For each file: check against file naming patterns
-5. Check `requiredPaths` and `required` files exist
-6. Skip anything in `ignore` list
-7. Return violations
+<details>
+<summary><strong>Adding a new CLI flag</strong></summary>
 
-## Common Tasks
-
-### Adding a new CLI flag
-
-Edit `internal/cli/validate.go`, add to `Flags` slice:
+Edit `internal/cli/validate.go`:
 
 ```go
-&cli.StringFlag{
-    Name:  "new-flag",
-    Usage: "Description",
+// Add to Flags slice in validateCommand()
+&cli.BoolFlag{
+    Name:    "new-flag",
+    Usage:   "Description of flag",
+    Sources: cli.EnvVars("STRUCTLINT_NEW_FLAG"),
 },
+
+// Use in action function
+if cmd.Bool("new-flag") {
+    // handle flag
+}
 ```
 
-### Adding a new validation rule type
+</details>
 
-1. Add field to `Config` struct in `internal/config/config.go`
-2. Add validation logic in `internal/validator/validator.go`
-3. Add tests in `test/`
+<details>
+<summary><strong>Adding a new validation rule</strong></summary>
 
-### Modifying JSON report format
+1. Add to config struct in `internal/config/config.go`:
+```go
+type Config struct {
+    DirStructure      DirStructureConfig
+    FileNamingPattern FileNamingPatternConfig
+    NewRule           NewRuleConfig  // Add this
+    Ignore            []string
+}
 
-Edit `JSONReport` struct in `internal/validator/types.go`
+type NewRuleConfig struct {
+    Patterns []string `yaml:"patterns" json:"patterns"`
+}
+```
 
-## Testing
+2. Add validation in `internal/validator/validator.go`:
+```go
+func (v *Validator) ValidateNewRule(rootPath string) {
+    // Implementation
+}
+```
 
-Tests use binary-first approach:
-- `buildBinary(t)` compiles the CLI
-- Tests run actual binary via `exec.Command`
-- Use `t.TempDir()` for isolation
+3. Call from `internal/cli/validate.go`
 
-Run tests: `go test ./... -v`
+4. Add tests in `test/`
 
-## Build
+</details>
+
+<details>
+<summary><strong>Modifying JSON report</strong></summary>
+
+Edit `internal/validator/types.go`:
+
+```go
+type JSONReport struct {
+    Successes int      `json:"successes"`
+    Failures  int      `json:"failures"`
+    Errors    []string `json:"errors"`
+    NewField  string   `json:"new_field"`  // Add fields here
+}
+```
+
+</details>
+
+<details>
+<summary><strong>Writing tests</strong></summary>
+
+Tests use binary-first approach - build the CLI and run it:
+
+```go
+func TestNewFeature(t *testing.T) {
+    bin := buildBinary(t)  // Compiles CLI
+
+    files := map[string]string{
+        "main.go": "package main",
+    }
+    config := `dir_structure:
+  allowedPaths: ["."]
+`
+    projectDir := createTestProject(t, files, config)
+
+    out, err := runBinaryInDir(t, bin, projectDir,
+        "validate", "--config", ".structlint.yaml")
+
+    if err != nil {
+        t.Errorf("Failed: %v\nOutput: %s", err, out)
+    }
+}
+```
+
+</details>
+
+## Dependencies
+
+Only 3 direct dependencies (minimal):
+
+| Package | Purpose |
+|---------|---------|
+| `github.com/gobwas/glob` | Glob pattern matching |
+| `github.com/urfave/cli/v3` | CLI framework |
+| `gopkg.in/yaml.v2` | YAML parsing |
+
+## Build Commands
 
 ```bash
-make build        # Single platform
-make build-all    # All platforms
+make build        # Build for current platform → bin/structlint
+make build-all    # Build all platforms → dist/
+make test         # Run all tests
+make lint         # Run linter
+make clean        # Remove build artifacts
 ```
 
-Version info injected via LDFLAGS.
+## Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| 0 | Validation passed |
+| 1 | Validation failed |
+| 2 | Config error |
+| 3 | Runtime error |
