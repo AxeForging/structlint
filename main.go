@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/youngestaxe/structlint/internal/app"
+	"github.com/AxeForging/structlint/internal/app"
 )
 
 // main.go serves as a backward compatibility entry point

@@ -1,4 +1,4 @@
-module github.com/youngestaxe/structlint
+module github.com/AxeForging/structlint
 
 go 1.24
 

@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"github.com/urfave/cli/v3"
-	"github.com/youngestaxe/structlint/internal/config"
-	"github.com/youngestaxe/structlint/internal/logging"
+	"github.com/AxeForging/structlint/internal/config"
+	"github.com/AxeForging/structlint/internal/logging"
 )
 
 // Setup wires logging and config before any command runs.

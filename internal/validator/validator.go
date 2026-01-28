@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/gobwas/glob"
-	"github.com/youngestaxe/structlint/internal/config"
+	"github.com/AxeForging/structlint/internal/config"
 )
 
 // Validator holds the configuration and validation results.

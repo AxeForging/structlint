@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/youngestaxe/structlint/internal/config"
-	"github.com/youngestaxe/structlint/internal/logging"
-	"github.com/youngestaxe/structlint/internal/validator"
+	"github.com/AxeForging/structlint/internal/config"
+	"github.com/AxeForging/structlint/internal/logging"
+	"github.com/AxeForging/structlint/internal/validator"
 )
 
 // TestProjectStructureValidation tests our own project structure against defined standards
