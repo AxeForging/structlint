@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/urfave/cli/v3"
 	"github.com/AxeForging/structlint/internal/config"
 	"github.com/AxeForging/structlint/internal/logging"
+	"github.com/urfave/cli/v3"
 )
 
 // Setup wires logging and config before any command runs.
@@ -44,7 +44,7 @@ func LoadConfigForContext(cmd *cli.Command) (*config.Config, error) {
 
 	// Check if config file exists
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		return nil, fmt.Errorf("configuration file not found: %s", configPath)
+		return nil, fmt.Errorf("configuration file not found: %s\n\nRun 'structlint init' to generate a starter configuration", configPath)
 	}
 
 	return config.LoadConfig(configPath)

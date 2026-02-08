@@ -165,7 +165,6 @@ func TestProjectStandardsCompliance(t *testing.T) {
 
 		return nil
 	})
-
 	if err != nil {
 		t.Errorf("Error walking directory: %v", err)
 	}
