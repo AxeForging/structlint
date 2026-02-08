@@ -14,10 +14,10 @@ func TestMonorepoStructure(t *testing.T) {
 
 	files := map[string]string{
 		// Root level
-		"go.work":     "go 1.24\n\nuse (\n\t./services/api\n\t./services/worker\n\t./libs/shared\n)",
-		"README.md":   "# Monorepo",
-		"Makefile":    "all: build",
-		".gitignore":  "bin/\n*.log",
+		"go.work":    "go 1.24\n\nuse (\n\t./services/api\n\t./services/worker\n\t./libs/shared\n)",
+		"README.md":  "# Monorepo",
+		"Makefile":   "all: build",
+		".gitignore": "bin/\n*.log",
 
 		// Service 1: API
 		"services/api/go.mod":              "module monorepo/services/api\ngo 1.24",
@@ -26,15 +26,15 @@ func TestMonorepoStructure(t *testing.T) {
 		"services/api/Dockerfile":          "FROM golang:1.24",
 
 		// Service 2: Worker
-		"services/worker/go.mod":            "module monorepo/services/worker\ngo 1.24",
-		"services/worker/cmd/main.go":       "package main\nfunc main() {}",
+		"services/worker/go.mod":             "module monorepo/services/worker\ngo 1.24",
+		"services/worker/cmd/main.go":        "package main\nfunc main() {}",
 		"services/worker/internal/worker.go": "package internal",
-		"services/worker/Dockerfile":        "FROM golang:1.24",
+		"services/worker/Dockerfile":         "FROM golang:1.24",
 
 		// Shared library
-		"libs/shared/go.mod":    "module monorepo/libs/shared\ngo 1.24",
-		"libs/shared/utils.go":  "package shared",
-		"libs/shared/types.go":  "package shared",
+		"libs/shared/go.mod":   "module monorepo/libs/shared\ngo 1.24",
+		"libs/shared/utils.go": "package shared",
+		"libs/shared/types.go": "package shared",
 
 		// Infrastructure
 		"infra/terraform/main.tf":          "provider \"aws\" {}",
@@ -42,7 +42,7 @@ func TestMonorepoStructure(t *testing.T) {
 		"infra/k8s/worker-deployment.yaml": "apiVersion: apps/v1",
 
 		// Documentation
-		"docs/architecture.md": "# Architecture",
+		"docs/architecture.md":  "# Architecture",
 		"docs/api/openapi.yaml": "openapi: 3.0.0",
 
 		// Scripts
@@ -120,23 +120,23 @@ func TestNodeJSProjectStructure(t *testing.T) {
 
 	files := map[string]string{
 		// Root config
-		"package.json":     `{"name": "test-app", "version": "1.0.0"}`,
+		"package.json":      `{"name": "test-app", "version": "1.0.0"}`,
 		"package-lock.json": `{"lockfileVersion": 2}`,
-		"tsconfig.json":    `{"compilerOptions": {"target": "ES2020"}}`,
-		".eslintrc.json":   `{"extends": ["eslint:recommended"]}`,
-		".prettierrc":      `{"semi": true}`,
-		"README.md":        "# Node.js App",
-		".gitignore":       "node_modules/\ndist/\n.env",
+		"tsconfig.json":     `{"compilerOptions": {"target": "ES2020"}}`,
+		".eslintrc.json":    `{"extends": ["eslint:recommended"]}`,
+		".prettierrc":       `{"semi": true}`,
+		"README.md":         "# Node.js App",
+		".gitignore":        "node_modules/\ndist/\n.env",
 
 		// Source code
-		"src/index.ts":              "export const main = () => {}",
-		"src/app.ts":                "import express from 'express'",
-		"src/routes/users.ts":       "export const userRoutes = {}",
-		"src/routes/products.ts":    "export const productRoutes = {}",
-		"src/middleware/auth.ts":    "export const authMiddleware = {}",
-		"src/services/user.ts":      "export class UserService {}",
-		"src/models/user.ts":        "export interface User {}",
-		"src/utils/logger.ts":       "export const logger = {}",
+		"src/index.ts":           "export const main = () => {}",
+		"src/app.ts":             "import express from 'express'",
+		"src/routes/users.ts":    "export const userRoutes = {}",
+		"src/routes/products.ts": "export const productRoutes = {}",
+		"src/middleware/auth.ts": "export const authMiddleware = {}",
+		"src/services/user.ts":   "export class UserService {}",
+		"src/models/user.ts":     "export interface User {}",
+		"src/utils/logger.ts":    "export const logger = {}",
 
 		// Tests
 		"tests/unit/user.test.ts":       "describe('User', () => {})",
@@ -148,8 +148,8 @@ func TestNodeJSProjectStructure(t *testing.T) {
 		"config/production.json": `{"port": 8080}`,
 
 		// Docker
-		"Dockerfile":          "FROM node:20-alpine",
-		"docker-compose.yml":  "version: '3'",
+		"Dockerfile":         "FROM node:20-alpine",
+		"docker-compose.yml": "version: '3'",
 
 		// CI/CD
 		".github/workflows/ci.yml": "name: CI",
@@ -232,11 +232,11 @@ func TestPythonProjectStructure(t *testing.T) {
 		"src/myapp/utils/__init__.py":  "",
 
 		// Tests
-		"tests/__init__.py":          "",
-		"tests/conftest.py":          "import pytest",
-		"tests/test_main.py":         "def test_main(): pass",
-		"tests/unit/__init__.py":     "",
-		"tests/unit/test_user.py":    "def test_user(): pass",
+		"tests/__init__.py":       "",
+		"tests/conftest.py":       "import pytest",
+		"tests/test_main.py":      "def test_main(): pass",
+		"tests/unit/__init__.py":  "",
+		"tests/unit/test_user.py": "def test_user(): pass",
 
 		// Config
 		"config/settings.yaml": "debug: true",
@@ -306,9 +306,9 @@ func TestDeepNestedStructure(t *testing.T) {
 	bin := buildBinary(t)
 
 	files := map[string]string{
-		"level1/level2/level3/level4/level5/deep.go":                       "package deep",
-		"level1/level2/level3/level4/level5/level6/level7/verydeep.go":     "package verydeep",
-		"a/b/c/d/e/f/g/h/i/j/extreme.go":                                   "package extreme",
+		"level1/level2/level3/level4/level5/deep.go":                      "package deep",
+		"level1/level2/level3/level4/level5/level6/level7/verydeep.go":    "package verydeep",
+		"a/b/c/d/e/f/g/h/i/j/extreme.go":                                  "package extreme",
 		"src/internal/pkg/domain/entity/user/repository/postgres/impl.go": "package postgres",
 		"README.md": "# Deep Structure Test",
 	}
@@ -360,24 +360,24 @@ func TestMixedLanguageProject(t *testing.T) {
 		"backend/internal/api.go":    "package internal",
 
 		// TypeScript frontend
-		"frontend/package.json":      `{"name": "frontend"}`,
-		"frontend/src/App.tsx":       "export const App = () => {}",
-		"frontend/src/index.ts":      "import './App'",
-		"frontend/tsconfig.json":     "{}",
+		"frontend/package.json":  `{"name": "frontend"}`,
+		"frontend/src/App.tsx":   "export const App = () => {}",
+		"frontend/src/index.ts":  "import './App'",
+		"frontend/tsconfig.json": "{}",
 
 		// Python ML service
-		"ml/requirements.txt":        "numpy==1.24.0",
-		"ml/src/__init__.py":         "",
-		"ml/src/model.py":            "class Model: pass",
+		"ml/requirements.txt": "numpy==1.24.0",
+		"ml/src/__init__.py":  "",
+		"ml/src/model.py":     "class Model: pass",
 
 		// Shared
-		"shared/proto/api.proto":     "syntax = \"proto3\";",
-		"shared/scripts/build.sh":    "#!/bin/bash",
+		"shared/proto/api.proto":  "syntax = \"proto3\";",
+		"shared/scripts/build.sh": "#!/bin/bash",
 
 		// Root
-		"docker-compose.yml":         "version: '3'",
-		"Makefile":                   "all: build",
-		"README.md":                  "# Multi-language Project",
+		"docker-compose.yml": "version: '3'",
+		"Makefile":           "all: build",
+		"README.md":          "# Multi-language Project",
 	}
 
 	config := `dir_structure:
@@ -525,14 +525,14 @@ func TestSpecialCharactersInPaths(t *testing.T) {
 	bin := buildBinary(t)
 
 	files := map[string]string{
-		"file-with-dashes.go":       "package main",
-		"file_with_underscores.go":  "package main",
-		"file.multiple.dots.go":     "package main",
-		"CamelCaseFile.go":          "package main",
-		"UPPERCASE.go":              "package main",
-		"dir-with-dash/file.go":     "package sub",
+		"file-with-dashes.go":         "package main",
+		"file_with_underscores.go":    "package main",
+		"file.multiple.dots.go":       "package main",
+		"CamelCaseFile.go":            "package main",
+		"UPPERCASE.go":                "package main",
+		"dir-with-dash/file.go":       "package sub",
 		"dir_with_underscore/file.go": "package sub",
-		"README.md":                 "# Test",
+		"README.md":                   "# Test",
 	}
 
 	config := `dir_structure:
@@ -620,11 +620,11 @@ func TestRequiredFilesWithGlobsComprehensive(t *testing.T) {
 
 	t.Run("required_met", func(t *testing.T) {
 		files := map[string]string{
-			"main.go":           "package main",
-			"app_test.go":       "package main",
-			"README.md":         "# Test",
-			"docs/USAGE.md":     "# Usage",
-			"internal/util.go":  "package internal",
+			"main.go":          "package main",
+			"app_test.go":      "package main",
+			"README.md":        "# Test",
+			"docs/USAGE.md":    "# Usage",
+			"internal/util.go": "package internal",
 		}
 
 		config := `dir_structure:
@@ -703,15 +703,15 @@ func TestIgnorePatternComprehensive(t *testing.T) {
 	bin := buildBinary(t)
 
 	files := map[string]string{
-		"main.go":                    "package main",
-		"vendor/lib/lib.go":          "package lib",
-		"node_modules/pkg/index.js":  "module.exports = {}",
-		".git/config":                "[core]",
-		"__pycache__/cache.pyc":      "bytecode",
-		"build/output/app":           "binary",
-		".idea/workspace.xml":        "<xml>",
-		"tmp/debug.log":              "logs",
-		"valid/code.go":              "package valid",
+		"main.go":                   "package main",
+		"vendor/lib/lib.go":         "package lib",
+		"node_modules/pkg/index.js": "module.exports = {}",
+		".git/config":               "[core]",
+		"__pycache__/cache.pyc":     "bytecode",
+		"build/output/app":          "binary",
+		".idea/workspace.xml":       "<xml>",
+		"tmp/debug.log":             "logs",
+		"valid/code.go":             "package valid",
 	}
 
 	config := `dir_structure:

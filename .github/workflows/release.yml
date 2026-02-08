@@ -29,34 +29,15 @@ jobs:
       - name: Run tests
         run: go test ./... -v
 
-      - name: Build binaries for all platforms
-        run: VERSION=${{ github.event.inputs.tag }} make build-all
-
-      - name: Create archives
+      - name: Create and push tag
         run: |
-          cd dist
-          for file in structlint-*; do
-            if [[ "$file" == *.exe ]]; then
-              # Windows: create zip
-              base="${file%.exe}"
-              zip "${base}.zip" "$file"
-              rm "$file"
-            else
-              # Unix: create tar.gz
-              tar -czvf "${file}.tar.gz" "$file"
-              rm "$file"
-            fi
-          done
-          ls -la
+          git tag ${{ inputs.tag }}
+          git push origin ${{ inputs.tag }}
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v6
         with:
-          tag_name: ${{ github.event.inputs.tag }}
-          name: Release ${{ github.event.inputs.tag }}
-          generate_release_notes: true
-          draft: false
-          prerelease: false
-          files: |
-            dist/*.tar.gz
-            dist/*.zip
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

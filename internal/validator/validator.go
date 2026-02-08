@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/gobwas/glob"
 	"github.com/AxeForging/structlint/internal/config"
+	"github.com/gobwas/glob"
 )
 
 // Validator holds the configuration and validation results.
