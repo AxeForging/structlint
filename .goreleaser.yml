@@ -25,26 +25,27 @@ builds:
       - -X github.com/AxeForging/structlint/internal/build.Commit={{.FullCommit}}
       - -X github.com/AxeForging/structlint/internal/build.Date={{.Date}}
       - -X github.com/AxeForging/structlint/internal/build.BuiltBy=goreleaser
-    binary: structlint-{{.OS}}-{{.Arch}}
     ignore:
       - goos: windows
         goarch: arm
 
 archives:
-  - format: tar.gz
-    name_template: "structlint-{{.OS}}-{{.Arch}}"
+  - formats:
+      - tar.gz
+    name_template: "structlint-{{ .Os }}-{{ .Arch }}"
     files:
       - README.md
       - LICENSE
     format_overrides:
       - goos: windows
-        format: zip
+        formats:
+          - zip
 
 checksum:
   name_template: 'checksums.txt'
 
 snapshot:
-  name_template: "{{ incpatch .Version }}-next"
+  version_template: "{{ incpatch .Version }}-next"
 
 changelog:
   sort: asc
