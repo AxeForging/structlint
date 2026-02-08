@@ -3,23 +3,28 @@ package app
 import (
 	"context"
 
-	"github.com/urfave/cli/v3"
 	clilib "github.com/AxeForging/structlint/internal/cli"
+	"github.com/urfave/cli/v3"
 )
 
 // New constructs the root command for the application.
 // Keep all cross-cutting concerns (global flags, before/after hooks) here.
 func New() *cli.Command {
+	validateCmd := clilib.NewValidateCmd()
+
 	return &cli.Command{
 		Name:  "structlint",
 		Usage: "A tool for validating directory structure and file naming patterns",
+		// Default action: run validate when no subcommand is given
+		Action: validateCmd.Action,
 		Before: func(ctx context.Context, cmd *cli.Command) (context.Context, error) {
 			return clilib.Setup(ctx, cmd) // initialize logging/config
 		},
 		Commands: []*cli.Command{
+			validateCmd,
+			clilib.NewInitCmd(),
 			clilib.NewVersionCmd(),
 			clilib.NewCompletionCmd(),
-			clilib.NewValidateCmd(),
 		},
 		Flags: []cli.Flag{
 			&cli.StringFlag{

@@ -27,7 +27,6 @@ func TestIntegrationSelfValidation(t *testing.T) {
 		"--config", configPath,
 		"--json-output", reportPath,
 	)
-
 	if err != nil {
 		t.Errorf("Self-validation failed: %v\nOutput: %s", err, out)
 	}
@@ -44,23 +43,23 @@ func TestIntegrationWithRealProject(t *testing.T) {
 	bin := buildBinary(t)
 
 	projectFiles := map[string]string{
-		"cmd/api/main.go":           "package main\n\nfunc main() {}",
-		"cmd/worker/main.go":        "package main\n\nfunc main() {}",
-		"internal/api/handler.go":   "package api\n\ntype Handler struct{}",
-		"internal/service/user.go":  "package service\n\ntype UserService struct{}",
-		"internal/repository/db.go": "package repository\n\ntype DB struct{}",
-		"pkg/utils/logger.go":       "package utils\n\ntype Logger struct{}",
-		"config/app.yaml":           "app:\n  name: test-api\n  port: 8080",
-		"README.md":                 "# Test API\n\nA test API project.",
-		"docs/API.md":               "# API Documentation\n\n## Endpoints",
-		"Makefile":                  "build:\n\tgo build -o bin/api cmd/api/main.go",
-		"Dockerfile":                "FROM golang:1.24-alpine\nWORKDIR /app",
-		"go.mod":                    "module test-api\n\ngo 1.24",
-		"go.sum":                    "",
-		".gitignore":                "bin/\n*.log\n.env",
-		"internal/api/handler_test.go": "package api\n\nimport \"testing\"\n\nfunc TestHandler(t *testing.T) {}",
+		"cmd/api/main.go":               "package main\n\nfunc main() {}",
+		"cmd/worker/main.go":            "package main\n\nfunc main() {}",
+		"internal/api/handler.go":       "package api\n\ntype Handler struct{}",
+		"internal/service/user.go":      "package service\n\ntype UserService struct{}",
+		"internal/repository/db.go":     "package repository\n\ntype DB struct{}",
+		"pkg/utils/logger.go":           "package utils\n\ntype Logger struct{}",
+		"config/app.yaml":               "app:\n  name: test-api\n  port: 8080",
+		"README.md":                     "# Test API\n\nA test API project.",
+		"docs/API.md":                   "# API Documentation\n\n## Endpoints",
+		"Makefile":                      "build:\n\tgo build -o bin/api cmd/api/main.go",
+		"Dockerfile":                    "FROM golang:1.24-alpine\nWORKDIR /app",
+		"go.mod":                        "module test-api\n\ngo 1.24",
+		"go.sum":                        "",
+		".gitignore":                    "bin/\n*.log\n.env",
+		"internal/api/handler_test.go":  "package api\n\nimport \"testing\"\n\nfunc TestHandler(t *testing.T) {}",
 		"tests/integration/api_test.go": "package tests\n\nimport \"testing\"\n\nfunc TestAPI(t *testing.T) {}",
-		"scripts/build.sh":          "#!/bin/bash\ngo build -o bin/api cmd/api/main.go",
+		"scripts/build.sh":              "#!/bin/bash\ngo build -o bin/api cmd/api/main.go",
 	}
 
 	configContent := `dir_structure:
@@ -107,7 +106,6 @@ ignore:
 		"--config", ".structlint.yaml",
 		"--json-output", reportPath,
 	)
-
 	if err != nil {
 		t.Errorf("Real project validation failed: %v\nOutput: %s", err, out)
 	}

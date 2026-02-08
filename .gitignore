@@ -34,5 +34,6 @@ Thumbs.db
 
 # Project specific
 bin/
+dist/
 validation-report.json
 large-scale-report.json
