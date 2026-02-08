@@ -99,7 +99,6 @@ ignore:
 		"--config", ".structlint.yaml",
 		"--json-output", reportPath,
 	)
-
 	if err != nil {
 		t.Errorf("Monorepo validation failed: %v\nOutput: %s", err, out)
 	}
@@ -107,7 +106,9 @@ ignore:
 	// Verify JSON report
 	data, _ := os.ReadFile(reportPath)
 	var report map[string]interface{}
-	json.Unmarshal(data, &report)
+	if err := json.Unmarshal(data, &report); err != nil {
+		t.Fatalf("Failed to parse JSON report: %v", err)
+	}
 
 	if failures := report["failures"].(float64); failures > 0 {
 		t.Errorf("Expected 0 failures, got %v", failures)
@@ -202,7 +203,6 @@ ignore:
 		"validate",
 		"--config", ".structlint.yaml",
 	)
-
 	if err != nil {
 		t.Errorf("Node.js project validation failed: %v\nOutput: %s", err, out)
 	}
@@ -295,7 +295,6 @@ ignore:
 		"validate",
 		"--config", ".structlint.yaml",
 	)
-
 	if err != nil {
 		t.Errorf("Python project validation failed: %v\nOutput: %s", err, out)
 	}
@@ -338,7 +337,6 @@ ignore:
 		"validate",
 		"--config", ".structlint.yaml",
 	)
-
 	if err != nil {
 		t.Errorf("Deep nested structure validation failed: %v\nOutput: %s", err, out)
 	}
@@ -430,7 +428,6 @@ ignore:
 		"validate",
 		"--config", ".structlint.yaml",
 	)
-
 	if err != nil {
 		t.Errorf("Mixed language project validation failed: %v\nOutput: %s", err, out)
 	}
@@ -476,7 +473,6 @@ ignore:
 			"validate",
 			"--config", ".structlint.yaml",
 		)
-
 		if err != nil {
 			t.Errorf("Permissive mode should pass: %v\nOutput: %s", err, out)
 		}
@@ -558,7 +554,6 @@ ignore:
 		"validate",
 		"--config", ".structlint.yaml",
 	)
-
 	if err != nil {
 		t.Errorf("Special characters validation failed: %v\nOutput: %s", err, out)
 	}
@@ -578,7 +573,7 @@ func TestEmptyDirectories(t *testing.T) {
 	}
 
 	for _, dir := range emptyDirs {
-		if err := os.MkdirAll(filepath.Join(projectDir, dir), 0755); err != nil {
+		if err := os.MkdirAll(filepath.Join(projectDir, dir), 0o755); err != nil {
 			t.Fatalf("Failed to create dir: %v", err)
 		}
 	}
@@ -608,7 +603,6 @@ ignore:
 		"validate",
 		"--config", ".structlint.yaml",
 	)
-
 	if err != nil {
 		t.Errorf("Empty directories validation failed: %v\nOutput: %s", err, out)
 	}
@@ -653,7 +647,6 @@ ignore:
 			"validate",
 			"--config", ".structlint.yaml",
 		)
-
 		if err != nil {
 			t.Errorf("Required files validation failed: %v\nOutput: %s", err, out)
 		}
@@ -745,7 +738,6 @@ ignore:
 		"validate",
 		"--config", ".structlint.yaml",
 	)
-
 	if err != nil {
 		t.Errorf("Ignore pattern validation failed: %v\nOutput: %s", err, out)
 	}

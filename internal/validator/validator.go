@@ -95,7 +95,6 @@ func (v *Validator) ValidateDirStructure(path string) {
 		}
 		return nil
 	})
-
 	if err != nil {
 		v.Errors = append(v.Errors, fmt.Sprintf("Error walking directory: %s", err))
 	}
@@ -160,7 +159,6 @@ func (v *Validator) ValidateFileNaming(path string) {
 		}
 		return nil
 	})
-
 	if err != nil {
 		v.Errors = append(v.Errors, fmt.Sprintf("Error walking directory: %s", err))
 	}
@@ -209,7 +207,7 @@ func (v *Validator) SaveJSONReport(path string) error {
 		return err
 	}
 
-	return os.WriteFile(path, data, 0644)
+	return os.WriteFile(path, data, 0o644)
 }
 
 // ValidateRequiredPaths validates that all required directories exist.
@@ -264,7 +262,6 @@ func (v *Validator) ValidateRequiredFiles(path string) {
 			}
 			return nil
 		})
-
 		if err != nil {
 			v.Errors = append(v.Errors, fmt.Sprintf("Error checking for required file %s: %s", requiredFile, err))
 			continue

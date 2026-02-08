@@ -46,7 +46,7 @@ func NewInitCmd() *cli.Command {
 				return fmt.Errorf("unknown project type: %s (available: go, node, python, generic)", projectType)
 			}
 
-			if err := os.WriteFile(configPath, []byte(template), 0644); err != nil {
+			if err := os.WriteFile(configPath, []byte(template), 0o644); err != nil {
 				return fmt.Errorf("failed to write configuration: %w", err)
 			}
 
