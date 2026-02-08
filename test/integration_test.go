@@ -27,7 +27,6 @@ func TestIntegrationSelfValidation(t *testing.T) {
 		"--config", configPath,
 		"--json-output", reportPath,
 	)
-
 	if err != nil {
 		t.Errorf("Self-validation failed: %v\nOutput: %s", err, out)
 	}
@@ -107,7 +106,6 @@ ignore:
 		"--config", ".structlint.yaml",
 		"--json-output", reportPath,
 	)
-
 	if err != nil {
 		t.Errorf("Real project validation failed: %v\nOutput: %s", err, out)
 	}
