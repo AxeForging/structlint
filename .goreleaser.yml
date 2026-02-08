@@ -35,7 +35,6 @@ archives:
     name_template: "structlint-{{ .Os }}-{{ .Arch }}"
     files:
       - README.md
-      - LICENSE
     format_overrides:
       - goos: windows
         formats:
