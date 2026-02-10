@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="doc/banner.png" alt="structlint" width="400">
+</div>
+
 # structlint
 
 A CLI tool for validating and enforcing directory structure and file naming patterns in your projects.
