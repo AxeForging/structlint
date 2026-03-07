@@ -16,9 +16,10 @@ pre-commit:
 
     structlint:
       run: |
-        if [ -f bin/structlint ]; then
-          ./bin/structlint validate --silent
+        if [ ! -f bin/structlint ]; then
+          make build 2>/dev/null
         fi
+        ./bin/structlint validate --silent
 
 commit-msg:
   commands:
