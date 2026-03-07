@@ -1,0 +1,75 @@
+name: "StructLint"
+description: "Validate and enforce directory structure and file naming patterns"
+author: "AxeForging"
+inputs:
+  config:
+    description: "Path to .structlint.yaml config file"
+    required: false
+    default: ".structlint.yaml"
+  path:
+    description: "Directory to validate"
+    required: false
+    default: "."
+  json-output:
+    description: "Path to write JSON report (empty = no report)"
+    required: false
+  log-level:
+    description: "Log level: debug, info, warn, error"
+    required: false
+    default: "info"
+  silent:
+    description: "Silent mode - only exit code, no output"
+    required: false
+    default: "false"
+  version:
+    description: "Version of structlint to use (e.g. v0.2.0). Defaults to latest."
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Download StructLint
+      shell: bash
+      run: |
+        OS="linux"
+        ARCH="amd64"
+        if [[ "${{ runner.os }}" == "macOS" ]]; then OS="darwin"; fi
+        if [[ "${{ runner.arch }}" == "ARM64" ]]; then ARCH="arm64"; fi
+
+        VERSION="${{ inputs.version }}"
+        if [ -z "$VERSION" ]; then
+          VERSION="${{ github.action_ref }}"
+        fi
+        if [ -z "$VERSION" ] || [ "$VERSION" == "main" ]; then
+          VERSION="v0.2.0"
+        fi
+
+        URL="https://github.com/AxeForging/structlint/releases/download/${VERSION}/structlint-${OS}-${ARCH}.tar.gz"
+        echo "Downloading structlint ${VERSION} from ${URL}..."
+        curl -sSL "$URL" -o structlint.tar.gz
+        tar -xzf structlint.tar.gz
+        chmod +x structlint
+        echo "structlint ${VERSION} installed successfully"
+
+    - name: Run StructLint
+      shell: bash
+      run: |
+        ARGS="validate --config ${{ inputs.config }}"
+
+        if [ "${{ inputs.path }}" != "." ]; then
+          ARGS="${ARGS} --path ${{ inputs.path }}"
+        fi
+
+        if [ -n "${{ inputs.json-output }}" ]; then
+          ARGS="${ARGS} --json-output ${{ inputs.json-output }}"
+        fi
+
+        if [ "${{ inputs.log-level }}" != "info" ]; then
+          ARGS="${ARGS} --log-level ${{ inputs.log-level }}"
+        fi
+
+        if [ "${{ inputs.silent }}" == "true" ]; then
+          ARGS="${ARGS} --silent"
+        fi
+
+        ./structlint ${ARGS}

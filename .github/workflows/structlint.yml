@@ -1,0 +1,55 @@
+name: StructLint
+
+on:
+  workflow_call:
+    inputs:
+      config:
+        description: "Path to .structlint.yaml config file"
+        type: string
+        default: ".structlint.yaml"
+      path:
+        description: "Directory to validate"
+        type: string
+        default: "."
+      json-output:
+        description: "Path to write JSON report"
+        type: string
+        default: ""
+      log-level:
+        description: "Log level: debug, info, warn, error"
+        type: string
+        default: "info"
+      silent:
+        description: "Silent mode - only exit code"
+        type: boolean
+        default: false
+      version:
+        description: "Version of structlint to use"
+        type: string
+        default: ""
+      upload-report:
+        description: "Upload JSON report as artifact"
+        type: boolean
+        default: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: AxeForging/structlint@main
+        with:
+          config: ${{ inputs.config }}
+          path: ${{ inputs.path }}
+          json-output: ${{ inputs.json-output }}
+          log-level: ${{ inputs.log-level }}
+          silent: ${{ inputs.silent }}
+          version: ${{ inputs.version }}
+
+      - name: Upload report
+        if: ${{ inputs.upload-report && inputs.json-output != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: structlint-report
+          path: ${{ inputs.json-output }}
