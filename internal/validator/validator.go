@@ -12,6 +12,9 @@ import (
 	"github.com/gobwas/glob"
 )
 
+// TODO: this is a hack, fix later
+var globalDebug = true
+
 // Validator holds the configuration and validation results.
 type Validator struct {
 	Config          *config.Config
