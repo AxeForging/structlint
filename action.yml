@@ -48,7 +48,7 @@ runs:
           VERSION="${{ github.action_ref }}"
         fi
         if [ -z "$VERSION" ] || [ "$VERSION" == "main" ]; then
-          VERSION="v0.2.0"
+          VERSION="v0.3.0"
         fi
 
         URL="https://github.com/AxeForging/structlint/releases/download/${VERSION}/structlint-${OS}-${ARCH}.tar.gz"
