@@ -120,7 +120,7 @@ runs:
 
         # Add violations detail if any
         if [ "$FAILURES" -gt 0 ]; then
-          VIOLATIONS=$(jq -r '.summary.violations[]? | "### ⚠️ \(.description) (\(.count))\n\(.examples[]? | "- `\(.)`")\n"' "$REPORT")
+          VIOLATIONS=$(jq -r '.summary.violations[]? | "### ⚠️ \(.description) (\(.count))\n" + ([.examples[]? | "- `\(.)`"] | join("\n")) + "\n"' "$REPORT")
           {
             echo ""
             echo "<details>"
