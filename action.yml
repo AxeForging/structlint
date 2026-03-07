@@ -24,6 +24,13 @@ inputs:
   version:
     description: "Version of structlint to use (e.g. v0.2.0). Defaults to latest."
     required: false
+  comment-on-pr:
+    description: "Post validation results as a PR comment (requires pull_request event and GITHUB_TOKEN)"
+    required: false
+    default: "false"
+  GITHUB_TOKEN:
+    description: "GitHub token for PR comments (required if comment-on-pr is true)"
+    required: false
 
 runs:
   using: "composite"
@@ -52,16 +59,17 @@ runs:
         echo "structlint ${VERSION} installed successfully"
 
     - name: Run StructLint
+      id: validate
       shell: bash
       run: |
-        ARGS="validate --config ${{ inputs.config }}"
+        ARGS="validate --config ${{ inputs.config }} --json-output /tmp/structlint-report.json"
 
         if [ "${{ inputs.path }}" != "." ]; then
           ARGS="${ARGS} --path ${{ inputs.path }}"
         fi
 
         if [ -n "${{ inputs.json-output }}" ]; then
-          ARGS="${ARGS} --json-output ${{ inputs.json-output }}"
+          ARGS="${ARGS}"
         fi
 
         if [ "${{ inputs.log-level }}" != "info" ]; then
@@ -72,4 +80,99 @@ runs:
           ARGS="${ARGS} --silent"
         fi
 
-        ./structlint ${ARGS}
+        EXIT_CODE=0
+        ./structlint ${ARGS} || EXIT_CODE=$?
+
+        # Copy to user-specified path if requested
+        if [ -n "${{ inputs.json-output }}" ]; then
+          cp /tmp/structlint-report.json "${{ inputs.json-output }}"
+        fi
+
+        echo "exit_code=${EXIT_CODE}" >> "$GITHUB_OUTPUT"
+
+    - name: Generate Summary
+      if: always()
+      shell: bash
+      run: |
+        REPORT="/tmp/structlint-report.json"
+        if [ ! -f "$REPORT" ]; then
+          echo "No report file found, skipping summary."
+          exit 0
+        fi
+
+        SUCCESSES=$(jq -r '.successes' "$REPORT")
+        FAILURES=$(jq -r '.failures' "$REPORT")
+
+        if [ "$FAILURES" -eq 0 ]; then
+          STATUS_ICON="✅"
+          STATUS_TEXT="All checks passed"
+        else
+          STATUS_ICON="❌"
+          STATUS_TEXT="${FAILURES} violation(s) found"
+        fi
+
+        # Build markdown
+        MD=$(cat <<MDEOF
+        ## ${STATUS_ICON} StructLint Validation
+
+        | Metric | Count |
+        |--------|-------|
+        | Checks passed | ${SUCCESSES} |
+        | Violations | ${FAILURES} |
+        MDEOF
+        )
+
+        # Add violations detail if any
+        if [ "$FAILURES" -gt 0 ]; then
+          VIOLATIONS=$(jq -r '.summary.violations[]? | "### ⚠️ \(.description) (\(.count))\n\(.examples[]? | "- `\(.)`")\n"' "$REPORT")
+          MD="${MD}
+
+        <details>
+        <summary><strong>Violation Details</strong></summary>
+
+        ${VIOLATIONS}
+
+        </details>"
+        fi
+
+        # Write to job summary
+        echo "$MD" >> "$GITHUB_STEP_SUMMARY"
+
+        # Save for PR comment step
+        echo "$MD" > /tmp/structlint-comment.md
+
+    - name: Comment on PR
+      if: always() && inputs.comment-on-pr == 'true' && github.event_name == 'pull_request'
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.GITHUB_TOKEN }}
+      run: |
+        if [ ! -f /tmp/structlint-comment.md ]; then
+          echo "No comment file found, skipping."
+          exit 0
+        fi
+
+        PR_NUMBER="${{ github.event.pull_request.number }}"
+        REPO="${{ github.repository }}"
+        COMMENT_TAG="<!-- structlint-report -->"
+        BODY="${COMMENT_TAG}
+        $(cat /tmp/structlint-comment.md)"
+
+        # Check for existing structlint comment to update
+        EXISTING_COMMENT_ID=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" \
+          --jq ".[] | select(.body | startswith(\"${COMMENT_TAG}\")) | .id" 2>/dev/null | head -1)
+
+        if [ -n "$EXISTING_COMMENT_ID" ]; then
+          gh api "repos/${REPO}/issues/comments/${EXISTING_COMMENT_ID}" \
+            -X PATCH -f body="$BODY"
+          echo "Updated existing PR comment."
+        else
+          gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" \
+            -X POST -f body="$BODY"
+          echo "Created new PR comment."
+        fi
+
+    - name: Exit with validation result
+      if: always()
+      shell: bash
+      run: exit ${{ steps.validate.outputs.exit_code }}

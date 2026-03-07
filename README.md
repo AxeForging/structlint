@@ -488,6 +488,8 @@ jobs:
 | `log-level` | `debug`, `info`, `warn`, `error` | `info` |
 | `silent` | Exit code only, no output | `false` |
 | `version` | Structlint version to use | _(latest)_ |
+| `comment-on-pr` | Post results as a PR comment | `false` |
+| `GITHUB_TOKEN` | GitHub token (required for PR comments) | _(none)_ |
 
 </details>
 
@@ -506,6 +508,37 @@ jobs:
     name: structlint-report
     path: structlint-report.json
 ```
+
+</details>
+
+<details>
+<summary><strong>Action with PR Comments</strong></summary>
+
+Posts validation results directly on your pull request and writes a GitHub Actions Job Summary:
+
+```yaml
+name: Validate Structure
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  structlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: AxeForging/structlint@main
+        with:
+          config: .structlint.yaml
+          comment-on-pr: "true"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+The comment is updated on each push (not duplicated), and includes a collapsible violation details section.
 
 </details>
 
@@ -537,6 +570,7 @@ jobs:
 | `silent` | `boolean` | Exit code only | `false` |
 | `version` | `string` | Structlint version | _(latest)_ |
 | `upload-report` | `boolean` | Upload JSON report as artifact | `false` |
+| `comment-on-pr` | `boolean` | Post results as a PR comment | `false` |
 
 </details>
 
