@@ -68,10 +68,6 @@ runs:
           ARGS="${ARGS} --path ${{ inputs.path }}"
         fi
 
-        if [ -n "${{ inputs.json-output }}" ]; then
-          ARGS="${ARGS}"
-        fi
-
         if [ "${{ inputs.log-level }}" != "info" ]; then
           ARGS="${ARGS} --log-level ${{ inputs.log-level }}"
         fi
@@ -112,27 +108,29 @@ runs:
         fi
 
         # Build markdown
-        MD=$(cat <<MDEOF
-        ## ${STATUS_ICON} StructLint Validation
-
-        | Metric | Count |
-        |--------|-------|
-        | Checks passed | ${SUCCESSES} |
-        | Violations | ${FAILURES} |
-        MDEOF
-        )
+        {
+          echo "## ${STATUS_ICON} StructLint Validation"
+          echo ""
+          echo "| Metric | Count |"
+          echo "|--------|-------|"
+          echo "| Checks passed | ${SUCCESSES} |"
+          echo "| Violations | ${FAILURES} |"
+        } > /tmp/structlint-md.tmp
+        MD=$(cat /tmp/structlint-md.tmp)
 
         # Add violations detail if any
         if [ "$FAILURES" -gt 0 ]; then
           VIOLATIONS=$(jq -r '.summary.violations[]? | "### ⚠️ \(.description) (\(.count))\n\(.examples[]? | "- `\(.)`")\n"' "$REPORT")
-          MD="${MD}
-
-        <details>
-        <summary><strong>Violation Details</strong></summary>
-
-        ${VIOLATIONS}
-
-        </details>"
+          {
+            echo ""
+            echo "<details>"
+            echo "<summary><strong>Violation Details</strong></summary>"
+            echo ""
+            echo "$VIOLATIONS"
+            echo ""
+            echo "</details>"
+          } >> /tmp/structlint-md.tmp
+          MD=$(cat /tmp/structlint-md.tmp)
         fi
 
         # Write to job summary
