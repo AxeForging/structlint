@@ -7,6 +7,7 @@ dir_structure:
     - "cmd/**"              # Command entry points
     - "internal/**"         # Internal packages
     - "test/**"             # Test files
+    - "doc/**"              # Documentation
     - "docs/**"             # Documentation
     - "scripts/**"          # Build and utility scripts
     - "bin/**"              # Built binaries
@@ -41,6 +42,9 @@ file_naming_pattern:
     # Documentation
     - "*.md"
     - "*.txt"
+    - "*.png"
+    - "*.jpg"
+    - "*.svg"
     - "README*"
     - "LICENSE*"
     - "CHANGELOG*"

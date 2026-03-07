@@ -459,12 +459,141 @@ structlint completion fish > ~/.config/fish/completions/structlint.fish
 
 ## CI/CD Integration
 
-<details>
-<summary><strong>GitHub Actions</strong></summary>
+### GitHub Action
+
+The simplest way to use structlint in CI — no Go setup required:
 
 ```yaml
 name: Validate Structure
+on: [push, pull_request]
 
+jobs:
+  structlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: AxeForging/structlint@main
+        with:
+          config: .structlint.yaml
+```
+
+<details>
+<summary><strong>Action Inputs</strong></summary>
+
+| Input | Description | Default |
+|-------|-------------|---------|
+| `config` | Path to config file | `.structlint.yaml` |
+| `path` | Directory to validate | `.` |
+| `json-output` | Path for JSON report | _(none)_ |
+| `log-level` | `debug`, `info`, `warn`, `error` | `info` |
+| `silent` | Exit code only, no output | `false` |
+| `version` | Structlint version to use | _(latest)_ |
+| `comment-on-pr` | Post results as a PR comment | `false` |
+| `GITHUB_TOKEN` | GitHub token (required for PR comments) | _(none)_ |
+
+</details>
+
+<details>
+<summary><strong>Action with JSON Report</strong></summary>
+
+```yaml
+- uses: AxeForging/structlint@main
+  with:
+    config: .structlint.yaml
+    json-output: structlint-report.json
+
+- uses: actions/upload-artifact@v4
+  if: always()
+  with:
+    name: structlint-report
+    path: structlint-report.json
+```
+
+</details>
+
+<details>
+<summary><strong>Action with PR Comments</strong></summary>
+
+Posts validation results directly on your pull request and writes a GitHub Actions Job Summary:
+
+```yaml
+name: Validate Structure
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  structlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: AxeForging/structlint@main
+        with:
+          config: .structlint.yaml
+          comment-on-pr: "true"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+The comment is updated on each push (not duplicated), and includes a collapsible violation details section.
+
+</details>
+
+### Reusable Workflow
+
+For organizations that want a standardized setup across all repos:
+
+```yaml
+# In your repo's .github/workflows/structlint.yml
+name: Validate Structure
+on: [push, pull_request]
+
+jobs:
+  structlint:
+    uses: AxeForging/structlint/.github/workflows/structlint.yml@main
+    with:
+      config: .structlint.yaml
+```
+
+<details>
+<summary><strong>Reusable Workflow Inputs</strong></summary>
+
+| Input | Type | Description | Default |
+|-------|------|-------------|---------|
+| `config` | `string` | Path to config file | `.structlint.yaml` |
+| `path` | `string` | Directory to validate | `.` |
+| `json-output` | `string` | Path for JSON report | _(none)_ |
+| `log-level` | `string` | `debug`, `info`, `warn`, `error` | `info` |
+| `silent` | `boolean` | Exit code only | `false` |
+| `version` | `string` | Structlint version | _(latest)_ |
+| `upload-report` | `boolean` | Upload JSON report as artifact | `false` |
+| `comment-on-pr` | `boolean` | Post results as a PR comment | `false` |
+
+</details>
+
+<details>
+<summary><strong>Reusable Workflow with Report Upload</strong></summary>
+
+```yaml
+jobs:
+  structlint:
+    uses: AxeForging/structlint/.github/workflows/structlint.yml@main
+    with:
+      config: .structlint.yaml
+      json-output: report.json
+      upload-report: true
+```
+
+</details>
+
+<details>
+<summary><strong>Manual GitHub Actions (without the action)</strong></summary>
+
+```yaml
+name: Validate Structure
 on: [push, pull_request]
 
 jobs:
