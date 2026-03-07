@@ -53,9 +53,9 @@ runs:
 
         URL="https://github.com/AxeForging/structlint/releases/download/${VERSION}/structlint-${OS}-${ARCH}.tar.gz"
         echo "Downloading structlint ${VERSION} from ${URL}..."
-        curl -sSL "$URL" -o structlint.tar.gz
-        tar -xzf structlint.tar.gz
-        chmod +x structlint
+        curl -sSL "$URL" -o /tmp/structlint.tar.gz
+        tar -xzf /tmp/structlint.tar.gz -C /tmp
+        chmod +x /tmp/structlint
         echo "structlint ${VERSION} installed successfully"
 
     - name: Run StructLint
@@ -77,7 +77,7 @@ runs:
         fi
 
         EXIT_CODE=0
-        ./structlint ${ARGS} || EXIT_CODE=$?
+        /tmp/structlint ${ARGS} || EXIT_CODE=$?
 
         # Copy to user-specified path if requested
         if [ -n "${{ inputs.json-output }}" ]; then
@@ -153,8 +153,7 @@ runs:
         PR_NUMBER="${{ github.event.pull_request.number }}"
         REPO="${{ github.repository }}"
         COMMENT_TAG="<!-- structlint-report -->"
-        BODY="${COMMENT_TAG}
-        $(cat /tmp/structlint-comment.md)"
+        BODY="$(printf '%s\n%s' "$COMMENT_TAG" "$(cat /tmp/structlint-comment.md)")"
 
         # Check for existing structlint comment to update
         EXISTING_COMMENT_ID=$(gh api "repos/${REPO}/issues/${PR_NUMBER}/comments" \
