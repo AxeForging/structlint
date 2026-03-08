@@ -27,7 +27,7 @@ commit-msg:
       run: |
         msg=$(cat {1})
         # Check for conventional commit format
-        if ! echo "$msg" | grep -qE "^(feat|fix|docs|style|refactor|test|chore|build|ci|perf|revert)(\(.+\))?: .+"; then
+        if ! echo "$msg" | grep -qE "^(feat|fix|docs|style|refactor|test|chore|build|ci|perf|revert)(\(.+\))?(!)?: .+"; then
           echo "Error: Commit message must follow conventional commits format"
           echo "Examples:"
           echo "  feat: add new feature"
