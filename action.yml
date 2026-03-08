@@ -92,6 +92,9 @@ runs:
     - name: Generate Summary
       if: always()
       shell: bash
+      env:
+        CONFIG_PATH: ${{ inputs.config }}
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       run: |
         REPORT="/tmp/structlint-report.json"
         if [ ! -f "$REPORT" ]; then
@@ -101,40 +104,47 @@ runs:
 
         SUCCESSES=$(jq -r '.successes' "$REPORT")
         FAILURES=$(jq -r '.failures' "$REPORT")
+        TOTAL=$((SUCCESSES + FAILURES))
 
-        if [ "$FAILURES" -eq 0 ]; then
-          STATUS_ICON="✅"
-          STATUS_TEXT="All checks passed"
-        else
-          STATUS_ICON="❌"
-          STATUS_TEXT="${FAILURES} violation(s) found"
-        fi
-
-        # Build markdown
         {
-          echo "## ${STATUS_ICON} StructLint Validation"
-          echo ""
-          echo "| Metric | Count |"
-          echo "|--------|-------|"
-          echo "| Checks passed | ${SUCCESSES} |"
-          echo "| Violations | ${FAILURES} |"
-        } > /tmp/structlint-md.tmp
-        MD=$(cat /tmp/structlint-md.tmp)
+          if [ "$FAILURES" -eq 0 ]; then
+            echo "## StructLint — All checks passed"
+            echo ""
+            echo "**${SUCCESSES}** rules validated against \`${CONFIG_PATH}\`. No violations found."
+          else
+            echo "## StructLint — ${FAILURES} violation(s) found"
+            echo ""
+            echo "**${SUCCESSES}**/${TOTAL} rules passed · **${FAILURES}** violation(s) detected against \`${CONFIG_PATH}\`."
+            echo ""
 
-        # Add violations detail if any
-        if [ "$FAILURES" -gt 0 ]; then
-          VIOLATIONS=$(jq -r '.summary.violations[]? | "### ⚠️ \(.description) (\(.count))\n" + ([.examples[]? | "- `\(.)`"] | join("\n")) + "\n"' "$REPORT")
-          {
-            echo ""
-            echo "<details>"
-            echo "<summary><strong>Violation Details</strong></summary>"
-            echo ""
-            echo "$VIOLATIONS"
-            echo ""
-            echo "</details>"
-          } >> /tmp/structlint-md.tmp
-          MD=$(cat /tmp/structlint-md.tmp)
-        fi
+            # Render each violation category
+            jq -r '.summary.violations[]? | @json' "$REPORT" | while IFS= read -r v; do
+              DESC=$(echo "$v" | jq -r '.description')
+              COUNT=$(echo "$v" | jq -r '.count')
+              EXAMPLES=$(echo "$v" | jq -r '.examples[]?')
+              EXAMPLE_COUNT=$(echo "$v" | jq -r '.examples | length')
+
+              echo "<details>"
+              echo "<summary><strong>${DESC}</strong> (${COUNT})</summary>"
+              echo ""
+              echo "$EXAMPLES" | while IFS= read -r ex; do
+                echo "- \`${ex}\`"
+              done
+              if [ "$COUNT" -gt "$EXAMPLE_COUNT" ]; then
+                REMAINING=$((COUNT - EXAMPLE_COUNT))
+                echo "- _…and ${REMAINING} more_"
+              fi
+              echo ""
+              echo "</details>"
+              echo ""
+            done
+          fi
+
+          echo "---"
+          echo "<sub><a href=\"${RUN_URL}\">View full run</a> · Powered by <a href=\"https://github.com/AxeForging/structlint\">StructLint</a></sub>"
+        } > /tmp/structlint-md.tmp
+
+        MD=$(cat /tmp/structlint-md.tmp)
 
         # Write to job summary
         echo "$MD" >> "$GITHUB_STEP_SUMMARY"
