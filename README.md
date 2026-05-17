@@ -79,8 +79,11 @@ structlint validate
 | Inconsistent project structure across team | Enforce allowed/disallowed paths |
 | Sensitive files committed (.env, keys) | Block forbidden file patterns |
 | Missing essential files (README, configs) | Require specific files |
+| Files drifting into the wrong layer | Enforce placement rules |
+| Packages missing local entrypoints/docs | Enforce required groups |
+| Cross-layer imports creeping in | Enforce Go, JS/TS, and Python boundaries |
 | AI tools placing files incorrectly | Clear structure rules for AI context |
-| CI/CD structural compliance | JSON reports + exit codes |
+| CI/CD structural compliance | JSON/SARIF/GitHub reports + exit codes |
 
 ## Configuration
 
@@ -154,6 +157,32 @@ ignore:
   - "bin"
   - "dist"
 ```
+
+</details>
+
+<details>
+<summary><strong>Organization Drift Rules</strong></summary>
+
+```yaml
+placement:
+  - id: migrations-only
+    files: ["*.sql"]
+    mustBeUnder: ["migrations/**"]
+
+requiredGroups:
+  - id: build-entrypoint
+    oneOf: ["Makefile", "Taskfile.yml", "justfile"]
+  - id: commands-have-main
+    eachDirMatching: "cmd/*"
+    mustContain: ["main.go"]
+
+boundaries:
+  - id: domain-no-infrastructure
+    from: "internal/domain/**"
+    cannotImport: ["internal/db/**", "internal/http/**"]
+```
+
+Boundary rules are language-aware for Go, JavaScript, TypeScript, and Python imports. See [Configuration Reference](docs/user/configuration.md) and [CI/CD Integration](docs/user/ci-cd-integration.md).
 
 </details>
 

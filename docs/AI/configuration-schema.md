@@ -13,6 +13,9 @@ file_naming_pattern:
   disallowed: []        # []string - glob patterns
   required: []          # []string - glob patterns
 
+placement: []           # []PlacementRule - file placement contracts
+requiredGroups: []      # []RequiredGroup - one-of and per-directory requirements
+boundaries: []          # []BoundaryRule - import boundary contracts
 ignore: []              # []string - exact paths or patterns
 ```
 
@@ -25,6 +28,9 @@ type Config struct {
     DirStructure      DirStructureConfig      `yaml:"dir_structure" json:"dir_structure"`
     FileNamingPattern FileNamingPatternConfig `yaml:"file_naming_pattern" json:"file_naming_pattern"`
     Ignore            []string                `yaml:"ignore" json:"ignore"`
+    Placement         []PlacementRule         `yaml:"placement" json:"placement"`
+    RequiredGroups    []RequiredGroup         `yaml:"requiredGroups" json:"requiredGroups"`
+    Boundaries        []BoundaryRule          `yaml:"boundaries" json:"boundaries"`
 }
 
 type DirStructureConfig struct {
@@ -37,6 +43,30 @@ type FileNamingPatternConfig struct {
     Allowed    []string `yaml:"allowed" json:"allowed"`
     Disallowed []string `yaml:"disallowed" json:"disallowed"`
     Required   []string `yaml:"required" json:"required"`
+}
+
+type PlacementRule struct {
+    ID          string   `yaml:"id" json:"id"`
+    Files       []string `yaml:"files" json:"files"`
+    MustBeUnder []string `yaml:"mustBeUnder" json:"mustBeUnder"`
+    Severity    string   `yaml:"severity" json:"severity"`
+}
+
+type RequiredGroup struct {
+    ID               string   `yaml:"id" json:"id"`
+    OneOf            []string `yaml:"oneOf" json:"oneOf"`
+    EachDirMatching  string   `yaml:"eachDirMatching" json:"eachDirMatching"`
+    MustContain      []string `yaml:"mustContain" json:"mustContain"`
+    MustContainOneOf []string `yaml:"mustContainOneOf" json:"mustContainOneOf"`
+    RequireMatch     bool     `yaml:"requireMatch" json:"requireMatch"`
+    Severity         string   `yaml:"severity" json:"severity"`
+}
+
+type BoundaryRule struct {
+    ID           string   `yaml:"id" json:"id"`
+    From         string   `yaml:"from" json:"from"`
+    CannotImport []string `yaml:"cannotImport" json:"cannotImport"`
+    Severity     string   `yaml:"severity" json:"severity"`
 }
 ```
 
@@ -121,6 +151,41 @@ ignore:
   - "bin"
 ```
 
+### Placement
+
+**placement**: Matching files must be under one of the configured roots.
+
+```yaml
+placement:
+  - id: sql-in-migrations
+    files: ["*.sql"]
+    mustBeUnder: ["migrations/**"]
+```
+
+### Required Groups
+
+**requiredGroups**: Higher-level required-file contracts.
+
+```yaml
+requiredGroups:
+  - id: build-entrypoint
+    oneOf: ["Makefile", "Taskfile.yml", "justfile"]
+  - id: commands-have-main
+    eachDirMatching: "cmd/*"
+    mustContain: ["main.go"]
+```
+
+### Boundaries
+
+**boundaries**: Import boundary rules for Go, JS/TS, and Python source files.
+
+```yaml
+boundaries:
+  - id: domain-no-db
+    from: "internal/domain/**"
+    cannotImport: ["internal/db/**"]
+```
+
 ## JSON Report Schema
 
 ```go
@@ -129,8 +194,18 @@ ignore:
 type JSONReport struct {
     Successes int               `json:"successes"`
     Failures  int               `json:"failures"`
+    TotalViolations int         `json:"total_violations"`
     Errors    []string          `json:"errors"`
+    Violations []Violation      `json:"violations"`
     Summary   ValidationSummary `json:"summary,omitempty"`
+}
+
+type Violation struct {
+    Code     string `json:"code"`
+    Severity string `json:"severity"`
+    Path     string `json:"path"`
+    Rule     string `json:"rule"`
+    Message  string `json:"message"`
 }
 
 type ValidationSummary struct {

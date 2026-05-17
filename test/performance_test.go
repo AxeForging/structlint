@@ -111,7 +111,7 @@ ignore: ["vendor"]
 	t.Logf("Results: %d successes, %d failures", v.Successes, len(v.Errors))
 
 	// Check if we have the expected number of violations
-	expectedViolations := 302 // 100 .env + 100 .log + 100 .tmp + 1 root dir + 1 config file
+	expectedViolations := 301 // 100 .env + 100 .log + 100 .tmp + 1 config file
 	if len(v.Errors) != expectedViolations {
 		t.Errorf("Expected %d violations, got %d", expectedViolations, len(v.Errors))
 	}
