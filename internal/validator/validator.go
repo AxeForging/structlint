@@ -1,11 +1,14 @@
 package validator
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"log/slog"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/AxeForging/structlint/internal/config"
@@ -16,11 +19,14 @@ import (
 type Validator struct {
 	Config          *config.Config
 	Errors          []string
+	Violations      []Violation
 	Successes       int
 	Logger          *slog.Logger
 	Silent          bool
 	GroupViolations bool
 	Verbose         bool // Show all allowed files, not just violations
+	ChangedOnly     bool
+	changedPaths    map[string]bool
 }
 
 // New creates a new Validator.
@@ -28,6 +34,7 @@ func New(cfg *config.Config, logger *slog.Logger) *Validator {
 	return &Validator{
 		Config:          cfg,
 		Errors:          []string{},
+		Violations:      []Violation{},
 		Successes:       0,
 		Logger:          logger,
 		Silent:          false,
@@ -38,14 +45,16 @@ func New(cfg *config.Config, logger *slog.Logger) *Validator {
 
 // ValidateDirStructure validates the directory structure.
 func (v *Validator) ValidateDirStructure(path string) {
+	root := cleanRoot(path)
 	err := filepath.Walk(path, func(currentPath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
+		relPath := relativePath(root, currentPath)
 
 		// Check if the path should be ignored
 		for _, ignored := range v.Config.Ignore {
-			if matches(currentPath, ignored) {
+			if pathMatches(relPath, ignored) {
 				if info.IsDir() {
 					return filepath.SkipDir
 				}
@@ -56,10 +65,9 @@ func (v *Validator) ValidateDirStructure(path string) {
 		if info.IsDir() {
 			// Check against disallowed paths
 			for _, disallowed := range v.Config.DirStructure.DisallowedPaths {
-				if matches(currentPath, disallowed) {
-					msg := fmt.Sprintf("Disallowed directory found: %s", currentPath)
-					v.printError(msg)
-					v.Errors = append(v.Errors, msg)
+				if pathMatches(relPath, disallowed) {
+					msg := fmt.Sprintf("Disallowed directory found: %s", relPath)
+					v.addViolation("disallowed_directory", "error", relPath, disallowed, msg)
 					return filepath.SkipDir // Skip validating contents of disallowed directories
 				}
 			}
@@ -67,36 +75,25 @@ func (v *Validator) ValidateDirStructure(path string) {
 			// Check against allowed paths
 			isAllowed := false
 			for _, allowed := range v.Config.DirStructure.AllowedPaths {
-				if matches(currentPath, allowed) {
+				if pathMatches(relPath, allowed) || isParentOfPattern(relPath, allowed) {
 					isAllowed = true
 					break
 				}
 			}
 
-			// Also consider a directory allowed if it's a parent of an allowed path
-			if !isAllowed {
-				for _, allowed := range v.Config.DirStructure.AllowedPaths {
-					if strings.HasPrefix(allowed, currentPath) {
-						isAllowed = true
-						break
-					}
-				}
-			}
-
 			if isAllowed {
-				msg := fmt.Sprintf("Allowed directory found: %s", currentPath)
+				msg := fmt.Sprintf("Allowed directory found: %s", relPath)
 				v.printSuccess(msg)
 				v.Successes++
 			} else {
-				msg := fmt.Sprintf("Directory not in allowed list: %s", currentPath)
-				v.printError(msg)
-				v.Errors = append(v.Errors, msg)
+				msg := fmt.Sprintf("Directory not in allowed list: %s", relPath)
+				v.addViolation("unallowed_directory", "error", relPath, "dir_structure.allowedPaths", msg)
 			}
 		}
 		return nil
 	})
 	if err != nil {
-		v.Errors = append(v.Errors, fmt.Sprintf("Error walking directory: %s", err))
+		v.addViolation("walk_error", "error", path, "filesystem", fmt.Sprintf("Error walking directory: %s", err))
 	}
 }
 
@@ -111,14 +108,16 @@ func matches(path, pattern string) bool {
 
 // ValidateFileNaming validates the file naming conventions.
 func (v *Validator) ValidateFileNaming(path string) {
+	root := cleanRoot(path)
 	err := filepath.Walk(path, func(currentPath string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
+		relPath := relativePath(root, currentPath)
 
 		// Check if the path should be ignored
 		for _, ignored := range v.Config.Ignore {
-			if matches(currentPath, ignored) {
+			if pathMatches(relPath, ignored) {
 				if info.IsDir() {
 					return filepath.SkipDir
 				}
@@ -127,14 +126,16 @@ func (v *Validator) ValidateFileNaming(path string) {
 		}
 
 		if !info.IsDir() {
+			if v.shouldSkipChanged(relPath) {
+				return nil
+			}
 			fileName := info.Name()
 
 			// Check against disallowed patterns
 			for _, disallowed := range v.Config.FileNamingPattern.Disallowed {
-				if matches(fileName, disallowed) {
-					msg := fmt.Sprintf("Disallowed file naming pattern found: %s", currentPath)
-					v.printError(msg)
-					v.Errors = append(v.Errors, msg)
+				if pathMatches(fileName, disallowed) || pathMatches(relPath, disallowed) {
+					msg := fmt.Sprintf("Disallowed file naming pattern found: %s", relPath)
+					v.addViolation("disallowed_file_pattern", "error", relPath, disallowed, msg)
 					return nil
 				}
 			}
@@ -142,25 +143,24 @@ func (v *Validator) ValidateFileNaming(path string) {
 			// Check against allowed patterns
 			isAllowed := false
 			for _, allowed := range v.Config.FileNamingPattern.Allowed {
-				if matches(fileName, allowed) {
+				if pathMatches(fileName, allowed) || pathMatches(relPath, allowed) {
 					isAllowed = true
 					break
 				}
 			}
 			if isAllowed {
-				msg := fmt.Sprintf("Allowed file naming pattern found: %s", currentPath)
+				msg := fmt.Sprintf("Allowed file naming pattern found: %s", relPath)
 				v.printSuccess(msg)
 				v.Successes++
 			} else {
-				msg := fmt.Sprintf("File not in allowed naming pattern: %s", currentPath)
-				v.printError(msg)
-				v.Errors = append(v.Errors, msg)
+				msg := fmt.Sprintf("File not in allowed naming pattern: %s", relPath)
+				v.addViolation("unallowed_file_pattern", "error", relPath, "file_naming_pattern.allowed", msg)
 			}
 		}
 		return nil
 	})
 	if err != nil {
-		v.Errors = append(v.Errors, fmt.Sprintf("Error walking directory: %s", err))
+		v.addViolation("walk_error", "error", path, "filesystem", fmt.Sprintf("Error walking directory: %s", err))
 	}
 }
 
@@ -193,23 +193,6 @@ func (v *Validator) PrintSummary() {
 	}
 }
 
-// SaveJSONReport saves the validation results to a JSON file.
-func (v *Validator) SaveJSONReport(path string) error {
-	report := JSONReport{
-		Successes: v.Successes,
-		Failures:  len(v.Errors),
-		Errors:    v.Errors,
-		Summary:   v.GetValidationSummary(false), // Don't include all errors in summary to avoid duplication
-	}
-
-	data, err := json.MarshalIndent(report, "", "  ")
-	if err != nil {
-		return err
-	}
-
-	return os.WriteFile(path, data, 0o644)
-}
-
 // ValidateRequiredPaths validates that all required directories exist.
 func (v *Validator) ValidateRequiredPaths(path string) {
 	for _, requiredPath := range v.Config.DirStructure.RequiredPaths {
@@ -217,8 +200,8 @@ func (v *Validator) ValidateRequiredPaths(path string) {
 
 		// Check if the required path exists
 		if _, err := os.Stat(fullPath); os.IsNotExist(err) {
-			v.printError(fmt.Sprintf("Required directory missing: %s", requiredPath))
-			v.Errors = append(v.Errors, fmt.Sprintf("Required directory missing: %s", requiredPath))
+			msg := fmt.Sprintf("Required directory missing: %s", requiredPath)
+			v.addViolation("missing_required_directory", "error", requiredPath, "dir_structure.requiredPaths", msg)
 		} else {
 			v.printSuccess(fmt.Sprintf("Required directory found: %s", requiredPath))
 			v.Successes++
@@ -228,6 +211,7 @@ func (v *Validator) ValidateRequiredPaths(path string) {
 
 // ValidateRequiredFiles validates that all required files exist.
 func (v *Validator) ValidateRequiredFiles(path string) {
+	root := cleanRoot(path)
 	for _, requiredFile := range v.Config.FileNamingPattern.Required {
 		// Check if any file matching the pattern exists
 		found := false
@@ -235,10 +219,11 @@ func (v *Validator) ValidateRequiredFiles(path string) {
 			if err != nil {
 				return err
 			}
+			relPath := relativePath(root, currentPath)
 
 			// Check if the path should be ignored
 			for _, ignored := range v.Config.Ignore {
-				if matches(currentPath, ignored) {
+				if pathMatches(relPath, ignored) {
 					if info.IsDir() {
 						return filepath.SkipDir
 					}
@@ -249,13 +234,8 @@ func (v *Validator) ValidateRequiredFiles(path string) {
 			if !info.IsDir() {
 				// For required file patterns, we need to check both the filename and the relative path
 				fileName := info.Name()
-				relPath, err := filepath.Rel(path, currentPath)
-				if err != nil {
-					relPath = currentPath // Fallback to full path if relative path fails
-				}
-
 				// Check if either the filename or the relative path matches the pattern
-				if matches(fileName, requiredFile) || matches(relPath, requiredFile) {
+				if pathMatches(fileName, requiredFile) || pathMatches(relPath, requiredFile) {
 					found = true
 					return filepath.SkipAll // Stop walking once we find a match
 				}
@@ -263,7 +243,7 @@ func (v *Validator) ValidateRequiredFiles(path string) {
 			return nil
 		})
 		if err != nil {
-			v.Errors = append(v.Errors, fmt.Sprintf("Error checking for required file %s: %s", requiredFile, err))
+			v.addViolation("walk_error", "error", requiredFile, "file_naming_pattern.required", fmt.Sprintf("Error checking for required file %s: %s", requiredFile, err))
 			continue
 		}
 
@@ -271,10 +251,233 @@ func (v *Validator) ValidateRequiredFiles(path string) {
 			v.printSuccess(fmt.Sprintf("Required file pattern found: %s", requiredFile))
 			v.Successes++
 		} else {
-			v.printError(fmt.Sprintf("Required file pattern missing: %s", requiredFile))
-			v.Errors = append(v.Errors, fmt.Sprintf("Required file pattern missing: %s", requiredFile))
+			msg := fmt.Sprintf("Required file pattern missing: %s", requiredFile)
+			v.addViolation("missing_required_file", "error", requiredFile, requiredFile, msg)
 		}
 	}
+}
+
+// ValidatePlacement validates file placement rules.
+func (v *Validator) ValidatePlacement(path string) {
+	root := cleanRoot(path)
+	_ = filepath.Walk(path, func(currentPath string, info os.FileInfo, err error) error {
+		if err != nil {
+			v.addViolation("walk_error", "error", currentPath, "placement", fmt.Sprintf("Error walking directory: %s", err))
+			return nil
+		}
+		relPath := relativePath(root, currentPath)
+		for _, ignored := range v.Config.Ignore {
+			if pathMatches(relPath, ignored) {
+				if info.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+		}
+		if info.IsDir() || v.shouldSkipChanged(relPath) {
+			return nil
+		}
+		for _, rule := range v.Config.Placement {
+			if !matchesAnyFile(relPath, info.Name(), rule.Files) {
+				continue
+			}
+			if underAny(relPath, rule.MustBeUnder) {
+				v.Successes++
+				continue
+			}
+			msg := fmt.Sprintf("File placement violation: %s must be under %s", relPath, strings.Join(rule.MustBeUnder, ", "))
+			v.addViolation("placement_violation", severity(rule.Severity), relPath, rule.ID, msg)
+		}
+		return nil
+	})
+}
+
+// ValidateRequiredGroups validates one-of and per-directory requirements.
+func (v *Validator) ValidateRequiredGroups(path string) {
+	root := cleanRoot(path)
+	for _, group := range v.Config.RequiredGroups {
+		if len(group.OneOf) > 0 {
+			if existsAny(root, group.OneOf, v.Config.Ignore) {
+				v.Successes++
+			} else {
+				msg := fmt.Sprintf("Required group missing one of: %s", strings.Join(group.OneOf, ", "))
+				v.addViolation("missing_required_group", severity(group.Severity), group.ID, group.ID, msg)
+			}
+		}
+		if group.EachDirMatching == "" {
+			continue
+		}
+		matches := matchingDirs(root, group.EachDirMatching, v.Config.Ignore)
+		if len(matches) == 0 && group.RequireMatch {
+			msg := fmt.Sprintf("Required group matched no directories: %s", group.EachDirMatching)
+			v.addViolation("missing_required_group_match", severity(group.Severity), group.EachDirMatching, group.ID, msg)
+		}
+		for _, dir := range matches {
+			for _, required := range group.MustContain {
+				if !existsAt(root, filepath.ToSlash(filepath.Join(dir, required))) {
+					msg := fmt.Sprintf("Directory %s missing required file: %s", dir, required)
+					v.addViolation("missing_group_file", severity(group.Severity), filepath.ToSlash(filepath.Join(dir, required)), group.ID, msg)
+				} else {
+					v.Successes++
+				}
+			}
+			if len(group.MustContainOneOf) > 0 {
+				found := false
+				for _, required := range group.MustContainOneOf {
+					if existsAt(root, filepath.ToSlash(filepath.Join(dir, required))) {
+						found = true
+						break
+					}
+				}
+				if found {
+					v.Successes++
+				} else {
+					msg := fmt.Sprintf("Directory %s missing one of: %s", dir, strings.Join(group.MustContainOneOf, ", "))
+					v.addViolation("missing_group_file", severity(group.Severity), dir, group.ID, msg)
+				}
+			}
+		}
+	}
+}
+
+// ValidateBoundaries validates import boundaries for supported source files.
+func (v *Validator) ValidateBoundaries(path string) {
+	root := cleanRoot(path)
+	modulePath := readGoModule(root)
+	_ = filepath.Walk(path, func(currentPath string, info os.FileInfo, err error) error {
+		if err != nil {
+			v.addViolation("walk_error", "error", currentPath, "boundaries", fmt.Sprintf("Error walking directory: %s", err))
+			return nil
+		}
+		relPath := relativePath(root, currentPath)
+		for _, ignored := range v.Config.Ignore {
+			if pathMatches(relPath, ignored) {
+				if info.IsDir() {
+					return filepath.SkipDir
+				}
+				return nil
+			}
+		}
+		if info.IsDir() || !isSupportedBoundaryFile(relPath) || v.shouldSkipChanged(relPath) {
+			return nil
+		}
+		for _, rule := range v.Config.Boundaries {
+			if !pathMatches(relPath, rule.From) {
+				continue
+			}
+			imports, err := sourceImports(currentPath, relPath)
+			if err != nil {
+				v.addViolation("parse_error", "error", relPath, rule.ID, fmt.Sprintf("Failed to parse imports: %s", err))
+				continue
+			}
+			for _, imp := range imports {
+				localImport := importToLocalPath(modulePath, imp, relPath)
+				for _, forbidden := range rule.CannotImport {
+					if pathMatches(imp, forbidden) || pathMatches(localImport, forbidden) {
+						msg := fmt.Sprintf("Boundary violation: %s imports %s", relPath, imp)
+						v.addViolation("boundary_violation", severity(rule.Severity), relPath, rule.ID, msg)
+					}
+				}
+			}
+			v.Successes++
+		}
+		return nil
+	})
+}
+
+// LoadChangedPaths populates the changed-file set used by --changed-only.
+func (v *Validator) LoadChangedPaths(path string) {
+	v.ChangedOnly = true
+	root := cleanRoot(path)
+	changed := map[string]bool{}
+	cmd := exec.Command("git", "diff", "--name-only", "--diff-filter=ACMRT", "HEAD")
+	cmd.Dir = root
+	out, err := cmd.Output()
+	if err != nil {
+		v.changedPaths = changed
+		return
+	}
+	scanner := bufio.NewScanner(strings.NewReader(string(out)))
+	for scanner.Scan() {
+		p := normalizePath(scanner.Text())
+		if p != "" {
+			changed[p] = true
+		}
+	}
+	v.changedPaths = changed
+}
+
+// ApplyBaseline suppresses violations already recorded in a previous JSON report.
+func (v *Validator) ApplyBaseline(path string) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	var report JSONReport
+	if err := json.Unmarshal(data, &report); err != nil {
+		return err
+	}
+	known := map[string]bool{}
+	for _, violation := range report.Violations {
+		known[violationKey(violation)] = true
+	}
+	if len(known) == 0 {
+		for _, errText := range report.Errors {
+			known[errText] = true
+		}
+	}
+	var keptViolations []Violation
+	var keptErrors []string
+	for _, violation := range v.Violations {
+		if known[violationKey(violation)] || known[violation.Message] {
+			continue
+		}
+		keptViolations = append(keptViolations, violation)
+		keptErrors = append(keptErrors, violation.Message)
+	}
+	v.Violations = keptViolations
+	v.Errors = keptErrors
+	return nil
+}
+
+func (v *Validator) addViolation(code, sev, path, rule, message string) {
+	if sev == "" {
+		sev = "error"
+	}
+	violation := Violation{
+		Code:     code,
+		Severity: sev,
+		Path:     normalizePath(path),
+		Rule:     rule,
+		Message:  message,
+	}
+	v.printError(message)
+	v.Violations = append(v.Violations, violation)
+	v.Errors = append(v.Errors, message)
+}
+
+func (v *Validator) sortedViolations() []Violation {
+	violations := append([]Violation(nil), v.Violations...)
+	sort.SliceStable(violations, func(i, j int) bool {
+		if violations[i].Path == violations[j].Path {
+			if violations[i].Code == violations[j].Code {
+				return violations[i].Rule < violations[j].Rule
+			}
+			return violations[i].Code < violations[j].Code
+		}
+		return violations[i].Path < violations[j].Path
+	})
+	return violations
+}
+
+func (v *Validator) shouldSkipChanged(relPath string) bool {
+	if !v.ChangedOnly {
+		return false
+	}
+	if len(v.changedPaths) == 0 {
+		return true
+	}
+	return !v.changedPaths[normalizePath(relPath)]
 }
 
 func (v *Validator) printSuccess(message string) {

@@ -121,6 +121,8 @@ ignore:
   - ".idea"
   - ".vscode"
   - "*.sublime-*"
+  - ".agents"
+  - ".codex"
   
   # OS files
   - ".DS_Store"
@@ -130,3 +132,4 @@ ignore:
   - "*.log"
   - "*.tmp"
   - "*.temp"
+  - "structlint"

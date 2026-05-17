@@ -14,20 +14,25 @@
 
 ### validate
 
-Validate directory structure and file naming patterns.
+Validate directory structure, file naming patterns, placement rules, required groups, and import boundaries.
 
 ```bash
-structlint validate [options] [path]
+structlint validate [options]
 ```
 
 **Options:**
 
-| Option | Description |
-|--------|-------------|
-| `--config, -c` | Path to config file |
-| `--json-output` | Path to write JSON report |
-| `--silent` | Suppress output (exit code only) |
-| `--strict` | Treat warnings as errors |
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--path` / `$STRUCTLINT_PATH` | `.` | Directory to validate |
+| `--config` / `$STRUCTLINT_CONFIG` | `.structlint.yaml` | Path to config file |
+| `--json-output` / `$STRUCTLINT_JSON_OUTPUT` | — | Path to write JSON report |
+| `--format` / `$STRUCTLINT_FORMAT` | `text` | Output format: `text`, `json`, `sarif`, or `github` |
+| `--baseline` / `$STRUCTLINT_BASELINE` | — | JSON report with known violations to suppress |
+| `--changed-only` / `$STRUCTLINT_CHANGED_ONLY` | false | Validate only files changed in `git diff --name-only HEAD` |
+| `--silent` / `$STRUCTLINT_SILENT` | false | Suppress text logging |
+| `--group-violations` / `$STRUCTLINT_GROUP_VIOLATIONS` | true | Group text output by violation type |
+| `--verbose` / `$STRUCTLINT_VERBOSE` | false | Show successful checks as well as violations |
 
 **Examples:**
 
@@ -42,10 +47,19 @@ structlint validate --config .structlint.yaml
 structlint validate --json-output report.json
 
 # Validate specific directory
-structlint validate /path/to/project
+structlint validate --path /path/to/project
 
 # Silent mode (for scripts)
 structlint validate --silent && echo "Valid"
+
+# GitHub Actions annotations
+structlint validate --format github
+
+# SARIF for code scanning
+structlint validate --format sarif > structlint.sarif
+
+# Suppress known drift while failing on new drift
+structlint validate --baseline .structlint-baseline.json
 ```
 
 ### version
@@ -102,17 +116,33 @@ When using `--json-output`, the report structure is:
 {
   "successes": 42,
   "failures": 2,
+  "total_violations": 2,
   "errors": [
     "Directory not in allowed list: tmp",
-    "Disallowed file found: .env.local"
+    "Disallowed file naming pattern found: .env.local"
+  ],
+  "violations": [
+    {
+      "code": "unallowed_directory",
+      "severity": "error",
+      "path": "tmp",
+      "rule": "dir_structure.allowedPaths",
+      "message": "Directory not in allowed list: tmp"
+    },
+    {
+      "code": "disallowed_file_pattern",
+      "severity": "error",
+      "path": ".env.local",
+      "rule": "*.env*",
+      "message": "Disallowed file naming pattern found: .env.local"
+    }
   ],
   "summary": {
-    "directories_checked": 15,
-    "files_checked": 27,
-    "violations_by_type": {
-      "dir_not_allowed": 1,
-      "file_disallowed": 1
-    }
+    "total_successes": 42,
+    "total_failures": 2,
+    "violations": []
   }
 }
 ```
+
+The `violations` array is the stable CI contract. Human-readable `errors` are kept for backward compatibility.

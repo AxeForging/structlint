@@ -24,8 +24,13 @@ file_naming_pattern:
   disallowed: []        # Glob patterns for disallowed files
   required: []          # Files that must exist (supports globs)
 
+placement: []           # Files that must live under specific directories
+requiredGroups: []      # One-of and per-directory required files
+boundaries: []          # Go import boundary rules
 ignore: []              # Paths to skip during validation
 ```
+
+Configuration loading is strict. Unknown keys such as `allowed_paths` fail before validation starts, which helps catch CI drift caused by typos.
 
 ## Glob Pattern Syntax
 
@@ -151,6 +156,70 @@ ignore:
   - ".vscode"
 ```
 
+## Placement Rules
+
+Placement rules ensure files of a given kind live in the expected part of the repository.
+
+```yaml
+placement:
+  - id: sql-in-migrations
+    files: ["*.sql"]
+    mustBeUnder: ["migrations/**"]
+
+  - id: tests-near-code
+    files: ["*_test.go"]
+    mustBeUnder: ["internal/**", "pkg/**", "test/**"]
+```
+
+| Field | Description |
+|-------|-------------|
+| `id` | Stable rule identifier used in JSON, SARIF, and GitHub annotations |
+| `files` | File name or path globs to match |
+| `mustBeUnder` | Directory globs where matching files are allowed |
+| `severity` | Optional severity, defaults to `error` |
+
+## Required Groups
+
+Required groups model repository contracts that are more expressive than a single required path.
+
+```yaml
+requiredGroups:
+  - id: build-entrypoint
+    oneOf: ["Makefile", "Taskfile.yml", "justfile"]
+
+  - id: commands-have-main
+    eachDirMatching: "cmd/*"
+    mustContain: ["main.go"]
+    requireMatch: true
+
+  - id: packages-have-docs
+    eachDirMatching: "internal/*"
+    mustContainOneOf: ["README.md", "doc.go"]
+```
+
+| Field | Description |
+|-------|-------------|
+| `oneOf` | At least one listed path or glob must exist |
+| `eachDirMatching` | Directory glob to apply per-directory checks to |
+| `mustContain` | Every matching directory must contain each listed file |
+| `mustContainOneOf` | Every matching directory must contain at least one listed file |
+| `requireMatch` | Fail if `eachDirMatching` finds no directories |
+
+## Boundary Rules
+
+Boundary rules parse imports and block unwanted dependencies between layers. They are language-aware for Go, JavaScript, TypeScript, and Python source files.
+
+```yaml
+boundaries:
+  - id: domain-no-db
+    from: "internal/domain/**"
+    cannotImport:
+      - "internal/db/**"
+      - "internal/http/**"
+```
+
+For Go module imports, structlint reads `go.mod` and converts imports like `example.com/app/internal/db` to `internal/db` before matching `cannotImport`. For JS/TS relative imports, paths like `../db/client` are resolved relative to the importing file. For Python, dotted imports like `app.db.client` are normalized to `app/db/client`.
+
 ## Complete Example
 
 ```yaml
@@ -205,6 +274,23 @@ file_naming_pattern:
     - "go.mod"
     - "README.md"
     - ".gitignore"
+
+placement:
+  - id: migrations-only
+    files: ["*.sql"]
+    mustBeUnder: ["migrations/**"]
+
+requiredGroups:
+  - id: build-entrypoint
+    oneOf: ["Makefile", "Taskfile.yml", "justfile"]
+  - id: commands-have-main
+    eachDirMatching: "cmd/*"
+    mustContain: ["main.go"]
+
+boundaries:
+  - id: domain-no-infrastructure
+    from: "internal/domain/**"
+    cannotImport: ["internal/db/**", "internal/http/**"]
 
 ignore:
   - ".git"

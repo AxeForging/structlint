@@ -27,6 +27,22 @@ func NewValidateCmd() *cli.Command {
 				Usage:   "path to save the JSON report",
 				Sources: cli.EnvVars("STRUCTLINT_JSON_OUTPUT"),
 			},
+			&cli.StringFlag{
+				Name:    "format",
+				Usage:   "output format: text|json|sarif|github",
+				Value:   "text",
+				Sources: cli.EnvVars("STRUCTLINT_FORMAT"),
+			},
+			&cli.StringFlag{
+				Name:    "baseline",
+				Usage:   "JSON report with known violations to suppress",
+				Sources: cli.EnvVars("STRUCTLINT_BASELINE"),
+			},
+			&cli.BoolFlag{
+				Name:    "changed-only",
+				Usage:   "only validate changed files from git diff against HEAD",
+				Sources: cli.EnvVars("STRUCTLINT_CHANGED_ONLY"),
+			},
 			&cli.BoolFlag{
 				Name:    "silent",
 				Usage:   "suppress all output except for the JSON report",
@@ -70,11 +86,22 @@ func NewValidateCmd() *cli.Command {
 			if path == "" {
 				path = "."
 			}
+			if cmd.Bool("changed-only") {
+				v.LoadChangedPaths(path)
+			}
 			v.ValidateDirStructure(path)
 			v.ValidateFileNaming(path)
 			v.ValidateRequiredPaths(path)
 			v.ValidateRequiredFiles(path)
-			v.PrintSummary()
+			v.ValidatePlacement(path)
+			v.ValidateRequiredGroups(path)
+			v.ValidateBoundaries(path)
+
+			if baseline := cmd.String("baseline"); baseline != "" {
+				if err := v.ApplyBaseline(baseline); err != nil {
+					return err
+				}
+			}
 
 			// Save JSON report if requested
 			jsonOutput := cmd.String("json-output")
@@ -82,6 +109,23 @@ func NewValidateCmd() *cli.Command {
 				if err := v.SaveJSONReport(jsonOutput); err != nil {
 					return err
 				}
+			}
+
+			switch format := cmd.String("format"); format {
+			case "text", "":
+				v.PrintSummary()
+			case "json":
+				if err := v.PrintJSONReport(); err != nil {
+					return err
+				}
+			case "sarif":
+				if err := v.PrintSARIFReport(); err != nil {
+					return err
+				}
+			case "github":
+				v.PrintGitHubAnnotations()
+			default:
+				return fmt.Errorf("unknown output format: %s", format)
 			}
 
 			// Return error if validation failed
