@@ -63,6 +63,10 @@ func (v *Validator) ValidateDirStructure(path string) {
 		}
 
 		if info.IsDir() {
+			if v.shouldSkipChangedDir(relPath) {
+				return filepath.SkipDir
+			}
+
 			// Check against disallowed paths
 			for _, disallowed := range v.Config.DirStructure.DisallowedPaths {
 				if pathMatches(relPath, disallowed) {
@@ -385,12 +389,25 @@ func (v *Validator) ValidateBoundaries(path string) {
 	})
 }
 
-// LoadChangedPaths populates the changed-file set used by --changed-only.
+// LoadChangedPaths populates the changed-file set used by --changed-only,
+// diffing against HEAD (working tree). Kept for backward compatibility.
 func (v *Validator) LoadChangedPaths(path string) {
+	v.LoadChangedPathsMode(path, false)
+}
+
+// LoadChangedPathsMode populates the changed-file set. When staged is true it
+// uses `git diff --cached` (staged index) instead of HEAD.
+func (v *Validator) LoadChangedPathsMode(path string, staged bool) {
 	v.ChangedOnly = true
 	root := cleanRoot(path)
 	changed := map[string]bool{}
-	cmd := exec.Command("git", "diff", "--name-only", "--diff-filter=ACMRT", "HEAD")
+	args := []string{"diff", "--name-only", "--diff-filter=ACMRT"}
+	if staged {
+		args = append(args, "--cached")
+	} else {
+		args = append(args, "HEAD")
+	}
+	cmd := exec.Command("git", args...)
 	cmd.Dir = root
 	out, err := cmd.Output()
 	if err != nil {
@@ -478,6 +495,29 @@ func (v *Validator) shouldSkipChanged(relPath string) bool {
 		return true
 	}
 	return !v.changedPaths[normalizePath(relPath)]
+}
+
+// shouldSkipChangedDir returns true when a directory falls outside the
+// changed-file scope. A directory is in-scope if it equals a changed path
+// or is an ancestor of one; "." (root) is always in-scope so the walk starts.
+func (v *Validator) shouldSkipChangedDir(relPath string) bool {
+	if !v.ChangedOnly {
+		return false
+	}
+	if len(v.changedPaths) == 0 {
+		return true
+	}
+	rel := normalizePath(relPath)
+	if rel == "." || rel == "" {
+		return false
+	}
+	prefix := rel + "/"
+	for changed := range v.changedPaths {
+		if changed == rel || strings.HasPrefix(changed, prefix) {
+			return false
+		}
+	}
+	return true
 }
 
 func (v *Validator) printSuccess(message string) {

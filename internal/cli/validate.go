@@ -44,6 +44,11 @@ func NewValidateCmd() *cli.Command {
 				Sources: cli.EnvVars("STRUCTLINT_CHANGED_ONLY"),
 			},
 			&cli.BoolFlag{
+				Name:    "staged",
+				Usage:   "only validate staged files (git diff --cached); implies --changed-only",
+				Sources: cli.EnvVars("STRUCTLINT_STAGED"),
+			},
+			&cli.BoolFlag{
 				Name:    "silent",
 				Usage:   "suppress all output except for the JSON report",
 				Sources: cli.EnvVars("STRUCTLINT_SILENT"),
@@ -86,8 +91,9 @@ func NewValidateCmd() *cli.Command {
 			if path == "" {
 				path = "."
 			}
-			if cmd.Bool("changed-only") {
-				v.LoadChangedPaths(path)
+			staged := cmd.Bool("staged")
+			if staged || cmd.Bool("changed-only") {
+				v.LoadChangedPathsMode(path, staged)
 			}
 			v.ValidateDirStructure(path)
 			v.ValidateFileNaming(path)
