@@ -54,7 +54,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Advisory AI review — never a PR gate. continue-on-error keeps the
+      # check green when GEMINI_API_KEY is missing (forks, unconfigured
+      # repos) or when reviewforge itself errors.
       - uses: AxeForging/reviewforge@main
+        continue-on-error: true
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AI_PROVIDER: gemini
