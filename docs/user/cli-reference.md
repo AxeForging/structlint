@@ -29,7 +29,8 @@ structlint validate [options]
 | `--json-output` / `$STRUCTLINT_JSON_OUTPUT` | — | Path to write JSON report |
 | `--format` / `$STRUCTLINT_FORMAT` | `text` | Output format: `text`, `json`, `sarif`, or `github` |
 | `--baseline` / `$STRUCTLINT_BASELINE` | — | JSON report with known violations to suppress |
-| `--changed-only` / `$STRUCTLINT_CHANGED_ONLY` | false | Validate only files changed in `git diff --name-only HEAD` |
+| `--changed-only` / `$STRUCTLINT_CHANGED_ONLY` | false | Validate only files changed in `git diff --name-only HEAD` (also filters directory-scope rules) |
+| `--staged` / `$STRUCTLINT_STAGED` | false | Validate only staged files (`git diff --cached`); implies `--changed-only`. Use in pre-commit hooks |
 | `--silent` / `$STRUCTLINT_SILENT` | false | Suppress text logging |
 | `--group-violations` / `$STRUCTLINT_GROUP_VIOLATIONS` | true | Group text output by violation type |
 | `--verbose` / `$STRUCTLINT_VERBOSE` | false | Show successful checks as well as violations |
@@ -60,7 +61,14 @@ structlint validate --format sarif > structlint.sarif
 
 # Suppress known drift while failing on new drift
 structlint validate --baseline .structlint-baseline.json
+
+# Pre-commit hook: only validate what's actually being committed
+structlint validate --staged --silent
 ```
+
+**Scope of `--changed-only` and `--staged`:**
+
+Both flags filter file-level rules (naming, placement, boundaries) to the changed set and prune directory-structure walks so pre-existing drift elsewhere in the repo doesn't block the commit. Existence-based rules (`requiredPaths`, `required` files, `requiredGroups`) are always checked in full — otherwise a commit that deletes `README.md` would silently pass.
 
 ### version
 
