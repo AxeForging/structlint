@@ -151,8 +151,11 @@ func TestProjectStandardsCompliance(t *testing.T) {
 			return err
 		}
 
-		// Skip directories
+		// Skip directories, but prune whole subtrees we know are ignored.
 		if info.IsDir() {
+			if info.Name() == "testdata" || info.Name() == "node_modules" || info.Name() == "vendor" {
+				return filepath.SkipDir
+			}
 			return nil
 		}
 

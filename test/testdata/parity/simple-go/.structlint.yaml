@@ -1,0 +1,17 @@
+dir_structure:
+  allowedPaths:
+    - "."
+    - "cmd/**"
+    - "internal/**"
+file_naming_pattern:
+  allowed:
+    - "*.go"
+    - "*.md"
+    - "*.mod"
+    - "*.yaml"
+    - ".gitignore"
+  required:
+    - "go.mod"
+    - "README.md"
+ignore:
+  - ".git"

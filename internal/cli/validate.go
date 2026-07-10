@@ -95,13 +95,7 @@ func NewValidateCmd() *cli.Command {
 			if staged || cmd.Bool("changed-only") {
 				v.LoadChangedPathsMode(path, staged)
 			}
-			v.ValidateDirStructure(path)
-			v.ValidateFileNaming(path)
-			v.ValidateRequiredPaths(path)
-			v.ValidateRequiredFiles(path)
-			v.ValidatePlacement(path)
-			v.ValidateRequiredGroups(path)
-			v.ValidateBoundaries(path)
+			v.Run(path)
 
 			if baseline := cmd.String("baseline"); baseline != "" {
 				if err := v.ApplyBaseline(baseline); err != nil {

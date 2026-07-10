@@ -1,0 +1,84 @@
+✗ Disallowed directory found: tmp
+✗ Disallowed file naming pattern found: .env.local
+✗ File not in allowed naming pattern: stray.sql
+✗ File placement violation: stray.sql must be under migrations/**
+{
+  "successes": 8,
+  "failures": 4,
+  "total_violations": 4,
+  "errors": [
+    "Disallowed directory found: tmp",
+    "Disallowed file naming pattern found: .env.local",
+    "File not in allowed naming pattern: stray.sql",
+    "File placement violation: stray.sql must be under migrations/**"
+  ],
+  "violations": [
+    {
+      "code": "disallowed_file_pattern",
+      "severity": "error",
+      "path": ".env.local",
+      "rule": "*.env*",
+      "message": "Disallowed file naming pattern found: .env.local"
+    },
+    {
+      "code": "placement_violation",
+      "severity": "error",
+      "path": "stray.sql",
+      "rule": "sql-only-under-migrations",
+      "message": "File placement violation: stray.sql must be under migrations/**"
+    },
+    {
+      "code": "unallowed_file_pattern",
+      "severity": "error",
+      "path": "stray.sql",
+      "rule": "file_naming_pattern.allowed",
+      "message": "File not in allowed naming pattern: stray.sql"
+    },
+    {
+      "code": "disallowed_directory",
+      "severity": "error",
+      "path": "tmp",
+      "rule": "tmp/**",
+      "message": "Disallowed directory found: tmp"
+    }
+  ],
+  "summary": {
+    "total_successes": 8,
+    "total_failures": 4,
+    "violations": [
+      {
+        "type": "disallowed_directory",
+        "count": 1,
+        "examples": [
+          "Disallowed directory found: tmp"
+        ],
+        "description": "Directories that are explicitly disallowed"
+      },
+      {
+        "type": "disallowed_file_pattern",
+        "count": 1,
+        "examples": [
+          "Disallowed file naming pattern found: .env.local"
+        ],
+        "description": "Files matching disallowed naming patterns"
+      },
+      {
+        "type": "placement_violation",
+        "count": 1,
+        "examples": [
+          "File placement violation: stray.sql must be under migrations/**"
+        ],
+        "description": "Files placed outside their required directories"
+      },
+      {
+        "type": "unallowed_file_pattern",
+        "count": 1,
+        "examples": [
+          "File not in allowed naming pattern: stray.sql"
+        ],
+        "description": "Files not matching any allowed naming pattern"
+      }
+    ]
+  }
+}
+validation failed with 4 errors

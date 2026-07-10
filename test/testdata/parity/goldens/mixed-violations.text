@@ -1,0 +1,27 @@
+✗ Disallowed directory found: tmp
+✗ Disallowed file naming pattern found: .env.local
+✗ File not in allowed naming pattern: stray.sql
+✗ File placement violation: stray.sql must be under migrations/**
+
+--- Validation Summary ---
+✓ 8 files/directories passed validation
+✗ 4 violations found
+
+--- Validation Summary ---
+✓ 8 checks passed
+✗ 4 checks failed
+
+--- Violation Summary ---
+
+Directories that are explicitly disallowed (1 violations):
+  - Disallowed directory found: tmp
+
+Files matching disallowed naming patterns (1 violations):
+  - Disallowed file naming pattern found: .env.local
+
+Files placed outside their required directories (1 violations):
+  - File placement violation: stray.sql must be under migrations/**
+
+Files not matching any allowed naming pattern (1 violations):
+  - File not in allowed naming pattern: stray.sql
+validation failed with 4 errors

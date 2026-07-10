@@ -1,0 +1,23 @@
+dir_structure:
+  allowedPaths:
+    - "."
+    - "src/**"
+  disallowedPaths:
+    - "tmp/**"
+  requiredPaths:
+    - "src"
+file_naming_pattern:
+  allowed:
+    - "*.go"
+    - "*.md"
+    - "*.yaml"
+  disallowed:
+    - "*.env*"
+  required:
+    - "README.md"
+placement:
+  - id: sql-only-under-migrations
+    files: ["*.sql"]
+    mustBeUnder: ["migrations/**"]
+ignore:
+  - ".git"
