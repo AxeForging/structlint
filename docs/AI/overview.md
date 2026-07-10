@@ -1,6 +1,8 @@
 # structlint - AI Context Overview
 
 > **For AI assistants:** This document provides the context you need to understand, use, and modify structlint.
+>
+> **If you are running structlint on behalf of a user** (validating, fixing violations, wiring hooks), read [`skills/structlint/SKILL.md`](../../skills/structlint/SKILL.md) instead — it is the agent-facing surface with machine contracts and the fix loop. The [violation codes reference](../user/violation-codes.md) declares codes frozen/append-only.
 
 ## What is structlint?
 

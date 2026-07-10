@@ -731,9 +731,17 @@ repos:
 | [Configuration](docs/user/configuration.md) | Complete config reference |
 | [CLI Reference](docs/user/cli-reference.md) | Commands and options |
 | [CI/CD Integration](docs/user/ci-cd-integration.md) | Pipeline examples |
+| [Violation Codes](docs/user/violation-codes.md) | Frozen list of all violation codes |
 | [AI Overview](docs/AI/overview.md) | AI context and architecture |
 | [Codebase Map](docs/AI/codebase-map.md) | File structure explained |
 | [Contributing](docs/AI/contributing.md) | How to contribute |
+
+## For AI agents
+
+structlint ships a skill file for AI agents (Claude Code, MCP-based agents, etc.). Install it into your agent's skills directory:
+
+- [`skills/structlint/SKILL.md`](skills/structlint/SKILL.md) — when-to-run, violation-code decision table, machine contracts (`validate --format json`, `suggest --format json v1`), and the suggest → apply → re-validate fix loop.
+- Codes are declared frozen and append-only — key on `code`, not on `message` text.
 
 ## License
 

@@ -15,6 +15,7 @@ dir_structure:
     - ".claude/**"          # Claude Code configuration
     - ".github/**"          # GitHub configuration
     - "schema/**"           # JSON Schema for editor autocomplete
+    - "skills/**"           # Shipped agent skill (SKILL.md)
   disallowedPaths:
     - "vendor/**"           # Vendor dependencies
     - "node_modules/**"     # Node.js dependencies
