@@ -23,6 +23,7 @@ func New() *cli.Command {
 		Commands: []*cli.Command{
 			validateCmd,
 			clilib.NewInitCmd(),
+			clilib.NewHookCmd(),
 			clilib.NewVersionCmd(),
 			clilib.NewCompletionCmd(),
 		},
