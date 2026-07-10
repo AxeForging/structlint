@@ -68,7 +68,23 @@ dir_structure:
 - `placement`, `requiredGroups`, `boundaries` — keyed by `id`. Same ID → child rule replaces the parent's wholesale. New IDs append.
 - Parents resolve depth-first. Chains are cycle-checked and capped at depth 10.
 
-**Compatibility warning:** the `extends` key requires structlint **v0.6.0 or newer**. Older binaries strict-parse the file and reject it with `field extends not found in type config.Config` — pin your CI action and pre-commit rev to a version that supports it, and add a `# requires structlint >= vX.Y` comment at the top of configs that use `extends`.
+**Compatibility warning:** the `extends` key requires structlint **v0.6.0 or newer**. Older binaries would strict-parse the file and reject it with `field extends not found in type config.Config` — a confusing error for the actual problem.
+
+To make old-binary failures actionable, add a `# requires structlint >= vX.Y` comment at the top of any config that uses `extends`:
+
+```yaml
+# requires structlint >= v0.6.0
+extends: go-standard
+```
+
+When a binary older than the pragma sees this comment, it stops **before** strict parsing and prints:
+
+```
+.structlint.yaml requires structlint >= v0.6.0, but running version is v0.5.0.
+Upgrade the binary (go install github.com/AxeForging/structlint/cmd/structlint@latest) …
+```
+
+The pragma is checked before strict parsing, so it works even on binaries too old to know about `extends`. Dev builds (unstamped `go run`) skip the check.
 
 ### Editor autocomplete via JSON Schema
 

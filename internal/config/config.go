@@ -122,6 +122,12 @@ func parseConfigFile(path string) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Version pragma is checked BEFORE strict parsing so users of newer
+	// features (e.g. `extends`) get an actionable "upgrade required"
+	// error instead of a raw yaml `field ... not found` message.
+	if err := enforceRequiresComment(path, data); err != nil {
+		return nil, err
+	}
 	return parseConfigBytes(data, filepath.Ext(path))
 }
 

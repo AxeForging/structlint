@@ -1,0 +1,15 @@
+✗ Disallowed directory found: tmp
+
+--- Validation Summary ---
+✓ 7 files/directories passed validation
+✗ 1 violations found
+
+--- Validation Summary ---
+✓ 7 checks passed
+✗ 1 checks failed
+
+--- Violation Summary ---
+
+Directories that are explicitly disallowed (1 violations):
+  - Disallowed directory found: tmp
+validation failed with 1 errors

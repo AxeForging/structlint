@@ -1,0 +1,13 @@
+dir_structure:
+  allowedPaths:
+    - "."
+    - "src/**"
+  disallowedPaths:
+    - "tmp/**"
+file_naming_pattern:
+  allowed:
+    - "*.go"
+    - "*.md"
+    - "*.yaml"
+ignore:
+  - ".git"

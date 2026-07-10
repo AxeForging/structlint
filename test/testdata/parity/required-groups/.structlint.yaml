@@ -1,0 +1,20 @@
+dir_structure:
+  allowedPaths:
+    - "."
+    - "cmd/**"
+file_naming_pattern:
+  allowed:
+    - "*.go"
+    - "*.md"
+    - "*.yaml"
+requiredGroups:
+  - id: commands-have-main
+    eachDirMatching: "cmd/*"
+    mustContain:
+      - "main.go"
+  - id: build-entrypoint
+    oneOf:
+      - "Makefile"
+      - "Taskfile.yml"
+ignore:
+  - ".git"

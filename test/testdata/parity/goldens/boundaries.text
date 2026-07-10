@@ -1,0 +1,15 @@
+✗ Boundary violation: internal/domain/model.go imports example.com/fixture/internal/db
+
+--- Validation Summary ---
+✓ 12 files/directories passed validation
+✗ 1 violations found
+
+--- Validation Summary ---
+✓ 12 checks passed
+✗ 1 checks failed
+
+--- Violation Summary ---
+
+Files importing paths forbidden by boundary rules (1 violations):
+  - Boundary violation: internal/domain/model.go imports example.com/fixture/internal/db
+validation failed with 1 errors
