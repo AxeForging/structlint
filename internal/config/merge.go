@@ -129,11 +129,11 @@ func describeCycle(visited map[string]bool, revisit string) string {
 }
 
 // mergeConfigs overlays child onto parent following the rules:
-// - simple string slices → parent entries first, then child entries not
-//   already present (exact-string dedup, order stable).
-// - Placement/RequiredGroups/Boundaries → keyed by ID; same ID → child
-//   rule replaces the parent's wholesale; new IDs append.
-// - Extends is consumed by the resolver and empty here.
+//   - simple string slices → parent entries first, then child entries not
+//     already present (exact-string dedup, order stable).
+//   - Placement/RequiredGroups/Boundaries → keyed by ID; same ID → child
+//     rule replaces the parent's wholesale; new IDs append.
+//   - Extends is consumed by the resolver and empty here.
 func mergeConfigs(parent, child *Config) *Config {
 	out := &Config{
 		DirStructure: DirStructure{
