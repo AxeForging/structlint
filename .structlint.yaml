@@ -17,6 +17,7 @@ dir_structure:
     - ".github/**"          # GitHub configuration
     - "schema/**"           # JSON Schema for editor autocomplete
     - "skills/**"           # Shipped agent skill (SKILL.md)
+    - "setup/**"            # Install-only GitHub Action
   disallowedPaths:
     - "vendor/**"           # Vendor dependencies
     - "node_modules/**"     # Node.js dependencies

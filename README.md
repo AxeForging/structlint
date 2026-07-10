@@ -513,6 +513,17 @@ structlint completion fish > ~/.config/fish/completions/structlint.fish
 
 ### GitHub Action
 
+Install without running Structlint (for Gauntlet or custom pipelines):
+
+```yaml
+- uses: AxeForging/structlint/setup@v0.6.0
+  with:
+    version: v0.6.0
+```
+
+Pin both references for reproducible CI; use `version: latest` only when
+intentionally opting into floating releases.
+
 The simplest way to use structlint in CI — no Go setup required:
 
 ```yaml
