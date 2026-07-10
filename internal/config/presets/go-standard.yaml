@@ -1,0 +1,53 @@
+dir_structure:
+  allowedPaths:
+    - "."
+    - "cmd/**"
+    - "internal/**"
+    - "pkg/**"
+    - "api/**"
+    - "test/**"
+    - "docs/**"
+    - "scripts/**"
+    - ".github/**"
+  disallowedPaths:
+    - "vendor/**"
+    - "node_modules/**"
+    - "tmp/**"
+  requiredPaths:
+    - "cmd"
+
+file_naming_pattern:
+  allowed:
+    - "*.go"
+    - "*.mod"
+    - "*.sum"
+    - "*.yaml"
+    - "*.yml"
+    - "*.json"
+    - "*.md"
+    - "*.txt"
+    - "Makefile"
+    - "Dockerfile*"
+    - "*.sh"
+    - ".gitignore"
+    - ".goreleaser.yaml"
+    - "LICENSE*"
+  disallowed:
+    - "*.env*"
+    - "*.key"
+    - "*.pem"
+    - ".DS_Store"
+    - "*.log"
+    - "*.tmp"
+    - "*~"
+    - "*.swp"
+  required:
+    - "go.mod"
+    - "README.md"
+    - ".gitignore"
+
+ignore:
+  - ".git"
+  - "vendor"
+  - "bin"
+  - "dist"
