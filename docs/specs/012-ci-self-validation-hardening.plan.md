@@ -6,6 +6,7 @@
 - [x] Add meaningful built-binary regression coverage for the strengthened self-policy (`test/*_test.go`, fixtures where needed).
 - [x] Run Go 1.25 race tests, formatting/tidiness checks, lint, local binary self-validation, and GoReleaser validation.
 - [x] Review the final diff and commit using project conventions; push `main` and monitor GitHub checks as the rollout verification.
+- [x] Replace Node 20-based checkout/setup actions with their official Node 24 majors after GitHub surfaced deprecation warnings during rollout (`.github/workflows/*.yml`, documentation examples).
 
 ## Risks
 

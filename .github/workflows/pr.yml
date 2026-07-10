@@ -24,7 +24,7 @@ jobs:
   review:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # Advisory AI review — never a PR gate. continue-on-error keeps the
       # check green when GEMINI_API_KEY is missing (forks, unconfigured
       # repos) or when reviewforge itself errors.
@@ -42,8 +42,8 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v6
         with:
           go-version: '1.25.x'
           cache: true

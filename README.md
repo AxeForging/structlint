@@ -500,7 +500,7 @@ jobs:
   structlint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: AxeForging/structlint@main
         with:
           config: .structlint.yaml
@@ -559,7 +559,7 @@ jobs:
   structlint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: AxeForging/structlint@main
         with:
           config: .structlint.yaml
@@ -629,10 +629,10 @@ jobs:
   structlint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: '1.25.x'
 
