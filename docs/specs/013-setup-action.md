@@ -8,7 +8,7 @@ through Gauntlet must duplicate installer shell code.
 ## Approach
 
 Add an install-only `setup/action.yml` composite action. It accepts `version`
-(default `v0.6.0`) and `install-dir` (default runner temp), invokes the existing
+(default `v0.6.1`) and `install-dir` (default runner temp), invokes the existing
 checksum-verifying installer, adds the directory to `PATH`, and verifies the
 binary. Keep the root action backward-compatible.
 
