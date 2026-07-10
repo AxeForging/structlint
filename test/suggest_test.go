@@ -163,9 +163,6 @@ ignore: [".git"]
 			t.Errorf("suggest must never propose *.env* as allowed, got proposal: %+v", p)
 		}
 	}
-	if !strings.Contains(r.ConfigDiff, "*.env*") == false {
-		// (double-negative guard) — .env* should NOT be added by the diff.
-	}
 	if strings.Contains(r.ConfigDiff, `+    - "*.env*"`) {
 		t.Errorf("configDiff must not add *.env* to allowed:\n%s", r.ConfigDiff)
 	}
