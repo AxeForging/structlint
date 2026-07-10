@@ -1,0 +1,12 @@
+{
+  "successes": 13,
+  "failures": 0,
+  "total_violations": 0,
+  "errors": null,
+  "violations": null,
+  "summary": {
+    "total_successes": 13,
+    "total_failures": 0,
+    "violations": []
+  }
+}

@@ -62,6 +62,7 @@ ignore:
   - "dist"
   - "*.log"
   - "*.tmp"
+  - "testdata"
 `
 
 	// Create temporary config file

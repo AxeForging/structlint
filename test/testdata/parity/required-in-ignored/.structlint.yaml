@@ -1,0 +1,12 @@
+dir_structure:
+  allowedPaths:
+    - "."
+  requiredPaths:
+    - "ignored-dir/inner"
+file_naming_pattern:
+  allowed:
+    - "*.md"
+    - "*.yaml"
+ignore:
+  - ".git"
+  - "ignored-dir"

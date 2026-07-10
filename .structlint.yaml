@@ -134,3 +134,6 @@ ignore:
   - "*.tmp"
   - "*.temp"
   - "structlint"
+
+  # Test fixtures — deliberately violate rules to exercise the validator
+  - "test/testdata"
