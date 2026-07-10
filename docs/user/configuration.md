@@ -39,6 +39,25 @@ ignore: []              # Paths to skip during validation
 
 Configuration loading is strict. Unknown keys such as `allowed_paths` fail before validation starts, which helps catch CI drift caused by typos.
 
+### Editor autocomplete via JSON Schema
+
+structlint ships a JSON Schema at [`schema/structlint.schema.json`](https://github.com/AxeForging/structlint/blob/main/schema/structlint.schema.json). Add this modeline to the top of your `.structlint.yaml` for completion, hover docs, and pre-run validation:
+
+```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/AxeForging/structlint/main/schema/structlint.schema.json
+```
+
+The [Red Hat YAML extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml) picks this up in VS Code. JetBrains and Neovim with `yaml-language-server` behave the same way. JSON configs can use a top-level `"$schema"` key:
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/AxeForging/structlint/main/schema/structlint.schema.json",
+  "dir_structure": { "allowedPaths": ["."] }
+}
+```
+
+The schema uses `additionalProperties: false` throughout, mirroring the strict parser — so typos like `placment:` get flagged in the editor with the same rejection the CLI would produce.
+
 ## Glob Pattern Syntax
 
 structlint supports standard glob patterns:
