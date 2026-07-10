@@ -2,10 +2,12 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 
+	"github.com/AxeForging/structlint/internal/infer"
 	"github.com/urfave/cli/v3"
 )
 
@@ -20,22 +22,41 @@ func NewInitCmd() *cli.Command {
 				Usage: "project type: go, node, python, generic (auto-detected if omitted)",
 			},
 			&cli.BoolFlag{
+				Name:  "infer",
+				Usage: "generate config by inspecting the current tree instead of a template",
+			},
+			&cli.BoolFlag{
 				Name:  "force",
 				Usage: "overwrite existing configuration file",
 			},
 		},
-		Action: func(ctx context.Context, cmd *cli.Command) error {
+		Action: func(_ context.Context, cmd *cli.Command) error {
+			if cmd.Bool("infer") && cmd.IsSet("type") {
+				return errors.New("--infer and --type are mutually exclusive")
+			}
+
 			configPath := cmd.Root().String("config")
 			if configPath == "" {
 				configPath = ".structlint.yaml"
 			}
 
-			// Check if config already exists
 			if _, err := os.Stat(configPath); err == nil && !cmd.Bool("force") {
 				return fmt.Errorf("configuration file already exists: %s (use --force to overwrite)", configPath)
 			}
 
-			// Determine project type
+			if cmd.Bool("infer") {
+				data, err := infer.Generate(".")
+				if err != nil {
+					return fmt.Errorf("infer config: %w", err)
+				}
+				if err := os.WriteFile(configPath, data, 0o644); err != nil {
+					return fmt.Errorf("failed to write configuration: %w", err)
+				}
+				fmt.Printf("Created %s from tree inspection\n", configPath)
+				fmt.Println("Run 'structlint validate' to check your project structure.")
+				return nil
+			}
+
 			projectType := cmd.String("type")
 			if projectType == "" {
 				projectType = detectProjectType(".")

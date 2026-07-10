@@ -59,6 +59,14 @@ make build
 
 ### 1. Create a Configuration File
 
+For an existing codebase, the fastest path is:
+
+```bash
+structlint init --infer
+```
+
+`init --infer` walks the actual tree and generates a `.structlint.yaml` that describes what is really there — `validate` passes on the same tree out of the box. Then tighten rules incrementally instead of drowning in violations on day one. Or start from a canned template with `structlint init --type go|node|python|generic`, or hand-write:
+
 ```yaml
 # .structlint.yaml
 dir_structure:
