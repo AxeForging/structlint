@@ -4,12 +4,19 @@ structlint uses YAML or JSON configuration files to define validation rules.
 
 ## Configuration File Location
 
-By default, structlint looks for:
-1. `--config` flag value
-2. `STRUCTLINT_CONFIG` environment variable
-3. `.structlint.yaml` in current directory
-4. `.structlint.yml` in current directory
-5. `.structlint.json` in current directory
+Resolution order:
+
+1. `--config` flag value (or `STRUCTLINT_CONFIG` env) — exact path, no discovery.
+2. `.structlint.yaml` in the current directory.
+3. **Upward search** — starting from `--path` (or cwd), each ancestor directory is checked for `.structlint.yaml`, `.structlint.yml`, then `.structlint.json`. The search stops after checking the first directory containing `.git` (inclusive — a config sitting alongside `.git` is discoverable) or at the filesystem root.
+
+When discovery finds a config, structlint logs `using config: <path> (discovered)` at info level.
+
+### Globs are relative to `--path`, not the config file
+
+Discovered configs behave exactly like explicit ones: their glob patterns match paths relative to the **validation root** (`--path`, defaulting to cwd), not to the directory the config lives in. If you run `structlint validate --path .` from a subdirectory of a monorepo whose config lives at the root, patterns like `internal/**` are matched against paths relative to your subdirectory, not the root — a repo-root config typically won't do the right thing when validating a single subtree.
+
+For monorepos, put a `.structlint.yaml` in each package/service root and run structlint per-package. `extends` (spec 007) lets each package share a common preset.
 
 ## Configuration Structure
 
