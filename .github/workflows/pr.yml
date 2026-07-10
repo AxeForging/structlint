@@ -62,6 +62,23 @@ jobs:
         with:
           since: origin/${{ github.base_ref }}
 
+  setup-action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - id: setup
+        uses: ./setup
+        with:
+          version: v0.6.0
+      - name: Verify setup outputs and executable
+        env:
+          BINARY: ${{ steps.setup.outputs.binary }}
+          VERSION: ${{ steps.setup.outputs.version }}
+        run: |
+          test -x "$BINARY"
+          test -n "$VERSION"
+          test "$(command -v structlint)" = "$BINARY"
+
   lint:
     runs-on: ubuntu-latest
     steps:
