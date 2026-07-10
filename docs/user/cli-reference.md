@@ -70,6 +70,22 @@ structlint validate --staged --silent
 
 Both flags filter file-level rules (naming, placement, boundaries) to the changed set and prune directory-structure walks so pre-existing drift elsewhere in the repo doesn't block the commit. Existence-based rules (`requiredPaths`, `required` files, `requiredGroups`) are always checked in full — otherwise a commit that deletes `README.md` would silently pass.
 
+### init
+
+Generate a starter `.structlint.yaml`.
+
+```bash
+structlint init [options]
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--infer` | false | Walk the tree and generate config that mirrors what actually exists — `validate` passes as-is. Mutually exclusive with `--type`. |
+| `--type` | auto | Template: `go`, `node`, `python`, or `generic`. Auto-detected if omitted. |
+| `--force` | false | Overwrite an existing config file. |
+
+Use `--infer` when adopting structlint on an existing codebase; you get a working baseline immediately and tighten rules later.
+
 ### hook install
 
 Merge a `structlint validate --staged --silent` invocation into the repository's pre-commit hook chain. Auto-detects lefthook, pre-commit, or a raw git hook; every merge is idempotent and never overwrites content it did not put there.
