@@ -1,0 +1,13 @@
+custom_gates:
+  # Structure is a whole-repository invariant; many findings identify paths
+  # rather than changed source lines.
+  structlint:
+    command: ["structlint", "validate", "--format", "github"]
+    parser: github-annotations
+    line_scoped: false
+
+  # Clone annotations include source lines and can be scoped to the PR diff.
+  dupehound:
+    command: ["dupehound", "scan", "--format", "github", "--quiet"]
+    parser: github-annotations
+    line_scoped: true

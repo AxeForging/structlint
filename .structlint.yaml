@@ -46,6 +46,7 @@ file_naming_pattern:
     
     # Documentation
     - "*.md"
+    - "*.sh"
     - "*.txt"
     - "*.png"
     - "*.jpg"

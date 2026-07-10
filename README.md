@@ -9,7 +9,7 @@ A CLI tool for validating and enforcing directory structure and file naming patt
 ## Installation
 
 ```bash
-go install github.com/AxeForging/structlint@latest
+curl -fsSL https://raw.githubusercontent.com/AxeForging/structlint/main/install.sh | sh
 ```
 
 <details>
@@ -45,6 +45,29 @@ make build
 ```
 
 </details>
+
+### Quality gates with Gauntlet
+
+Gauntlet orchestrates the repository's normal Go checks plus Structlint and Dupehound.
+Structlint remains whole-run because structural violations often identify paths rather
+than lines; Dupehound is diff-scoped through its source annotations.
+
+```yaml
+custom_gates:
+  structlint:
+    command: ["structlint", "validate", "--format", "github"]
+    parser: github-annotations
+    line_scoped: false
+  dupehound:
+    command: ["dupehound", "scan", "--format", "github", "--quiet"]
+    parser: github-annotations
+    line_scoped: true
+```
+
+```sh
+gauntlet check
+gauntlet check --staged --format agent
+```
 
 ## Quick Start
 
