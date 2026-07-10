@@ -1,0 +1,160 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/AxeForging/structlint/main/schema/structlint.schema.json",
+  "title": "structlint configuration",
+  "description": "Schema for .structlint.yaml, .structlint.yml, and .structlint.json — validates directory structure and file naming rules for a project.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Reserved for JSON configs that reference this schema directly. YAML users should use the yaml-language-server modeline instead."
+    },
+    "dir_structure": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Rules for which directories are allowed, disallowed, or required.",
+      "properties": {
+        "allowedPaths": {
+          "type": "array",
+          "description": "Glob patterns for directories that ARE allowed. Use `.` for the root and `dir/**` to include subtrees.",
+          "items": { "type": "string" }
+        },
+        "disallowedPaths": {
+          "type": "array",
+          "description": "Glob patterns for directories that are NOT allowed. Matches produce violations.",
+          "items": { "type": "string" }
+        },
+        "requiredPaths": {
+          "type": "array",
+          "description": "Directories that MUST exist. Simple names, not globs.",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "file_naming_pattern": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Rules for which file names are allowed, disallowed, or required.",
+      "properties": {
+        "allowed": {
+          "type": "array",
+          "description": "Glob patterns for allowed files (basename OR relative path).",
+          "items": { "type": "string" }
+        },
+        "disallowed": {
+          "type": "array",
+          "description": "Glob patterns for disallowed files.",
+          "items": { "type": "string" }
+        },
+        "required": {
+          "type": "array",
+          "description": "At least one file matching each pattern must exist somewhere in the tree.",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "ignore": {
+      "type": "array",
+      "description": "Path patterns to skip entirely during validation (e.g., .git, node_modules, vendor).",
+      "items": { "type": "string" }
+    },
+    "placement": {
+      "type": "array",
+      "description": "Rules that force matching files to live under specific directories.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "files", "mustBeUnder"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Stable rule id; appears in violations and used by suggest/baseline."
+          },
+          "files": {
+            "type": "array",
+            "description": "Glob patterns for files this rule applies to.",
+            "items": { "type": "string" }
+          },
+          "mustBeUnder": {
+            "type": "array",
+            "description": "One of these directory globs must contain the file.",
+            "items": { "type": "string" }
+          },
+          "severity": { "$ref": "#/definitions/severity" }
+        }
+      }
+    },
+    "requiredGroups": {
+      "type": "array",
+      "description": "One-of and per-directory required-file contracts.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Stable rule id."
+          },
+          "oneOf": {
+            "type": "array",
+            "description": "At least one of these files must exist somewhere.",
+            "items": { "type": "string" }
+          },
+          "eachDirMatching": {
+            "type": "string",
+            "description": "Glob for directories the rule applies to (e.g., cmd/*)."
+          },
+          "mustContain": {
+            "type": "array",
+            "description": "Files that MUST exist inside each matching directory.",
+            "items": { "type": "string" }
+          },
+          "mustContainOneOf": {
+            "type": "array",
+            "description": "At least one of these files must exist inside each matching directory.",
+            "items": { "type": "string" }
+          },
+          "requireMatch": {
+            "type": "boolean",
+            "description": "When true, fail if eachDirMatching matches no directories at all."
+          },
+          "severity": { "$ref": "#/definitions/severity" }
+        }
+      }
+    },
+    "boundaries": {
+      "type": "array",
+      "description": "Import-boundary rules for Go, JavaScript/TypeScript, and Python source files.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "from", "cannotImport"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Stable rule id."
+          },
+          "from": {
+            "type": "string",
+            "description": "Glob for the source-file relative paths this rule applies to."
+          },
+          "cannotImport": {
+            "type": "array",
+            "description": "Import globs the source files are forbidden from importing.",
+            "items": { "type": "string" }
+          },
+          "severity": { "$ref": "#/definitions/severity" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "severity": {
+      "type": "string",
+      "enum": ["error", "warning"],
+      "description": "Rule severity. Defaults to error when omitted."
+    }
+  }
+}

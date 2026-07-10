@@ -14,6 +14,7 @@ dir_structure:
     - "dist/**"             # Distribution files
     - ".claude/**"          # Claude Code configuration
     - ".github/**"          # GitHub configuration
+    - "schema/**"           # JSON Schema for editor autocomplete
   disallowedPaths:
     - "vendor/**"           # Vendor dependencies
     - "node_modules/**"     # Node.js dependencies
