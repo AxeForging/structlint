@@ -27,10 +27,10 @@ func TestInitInfer_ValidatePassesOnSameTree(t *testing.T) {
 			"internal/foo/x.go": "package foo\n",
 		},
 		"node-like": {
-			"package.json":      `{"name":"t"}`,
-			"README.md":         "# t\n",
-			"src/index.ts":      "export {}\n",
-			"src/util/a.ts":     "export {}\n",
+			"package.json":        `{"name":"t"}`,
+			"README.md":           "# t\n",
+			"src/index.ts":        "export {}\n",
+			"src/util/a.ts":       "export {}\n",
 			"tests/index.test.ts": "test('x', () => {})\n",
 		},
 		"mixed": {
@@ -59,8 +59,8 @@ func TestInitInfer_ValidatePassesOnSameTree(t *testing.T) {
 func TestInitInfer_Depth1DirsBecomeGlobs(t *testing.T) {
 	bin := buildBinary(t)
 	dir := buildInferProject(t, map[string]string{
-		"README.md":         "# t\n",
-		"internal/x/x.go":   "package x\n",
+		"README.md":       "# t\n",
+		"internal/x/x.go": "package x\n",
 	})
 	// Create an empty leaf dir (mkdir only).
 	if err := writeEmptyDir(t, dir, "empty-leaf"); err != nil {
