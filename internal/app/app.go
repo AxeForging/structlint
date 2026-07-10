@@ -24,6 +24,7 @@ func New() *cli.Command {
 			validateCmd,
 			clilib.NewInitCmd(),
 			clilib.NewHookCmd(),
+			clilib.NewSuggestCmd(),
 			clilib.NewVersionCmd(),
 			clilib.NewCompletionCmd(),
 		},

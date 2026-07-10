@@ -106,6 +106,55 @@ structlint hook install [options]
 
 Running the command twice is a no-op. YAML edits refuse (with a suggested snippet) when the target file uses anchors/aliases, since round-tripping would lose them.
 
+### suggest
+
+Runs the same engine as `validate`, then proposes fixes: config additions (rendered as a unified diff), file moves (as `git mv` commands), and creates. Print-only — never writes; **exits 0 even when proposals exist** (advisory tool; violation-gating is `validate`'s job).
+
+```bash
+structlint suggest [options]
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--path` | `.` | Directory to analyze |
+| `--format` | `text` | Output format: `text` or `json` |
+
+Violation → proposal mapping:
+
+| Code | Proposal |
+|------|----------|
+| `unallowed_directory` | Add generalized glob to `dir_structure.allowedPaths` |
+| `unallowed_file_pattern` | Add `*.ext` (or exact name) to `file_naming_pattern.allowed` |
+| `disallowed_directory`, `disallowed_file_pattern` | Note only — deliberate prohibitions are **never** loosened |
+| `placement_violation` | `git mv <from> <to>` where `<to>` is the placement rule's expected location |
+| `missing_required_*` | Create at the required path |
+| `boundary_violation`, `parse_error`, `walk_error` | Note only — no mechanical fix |
+
+**JSON contract (v1)** — versioned from day one; consumed by editors and AI agents:
+
+```json
+{
+  "version": 1,
+  "configPath": ".structlint.yaml",
+  "proposals": [
+    {"kind": "config_add", "section": "dir_structure.allowedPaths", "value": "tools/**", "reason": "...", "paths": ["tools"]},
+    {"kind": "move", "from": "stray.sql", "to": "migrations/stray.sql", "command": "git mv stray.sql migrations/stray.sql", "reason": "...", "paths": ["stray.sql"]}
+  ],
+  "configDiff": "--- a/.structlint.yaml\n+++ b/.structlint.yaml\n@@ ..."
+}
+```
+
+`configDiff` is built by **line-level insertion into the original config text**, not by re-marshalling the YAML — so comments, ordering, and quoting are preserved and the diff applies cleanly with `patch -p1`.
+
+Fix loop:
+
+```bash
+structlint suggest --format json > /tmp/report.json
+jq -r .configDiff /tmp/report.json | patch -p1        # apply config changes
+jq -r '.proposals[] | select(.kind=="move") | .command' /tmp/report.json | sh
+structlint validate                                    # confirm fixes
+```
+
 ### version
 
 Display version information.
