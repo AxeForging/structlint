@@ -634,7 +634,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25.x'
 
       - name: Install structlint
         run: go install github.com/AxeForging/structlint@latest

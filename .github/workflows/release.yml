@@ -23,11 +23,11 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.25.x'
           cache: true
 
-      - name: Run tests
-        run: go test ./... -v
+      - name: Run release checks
+        run: go test -race ./... -v
 
       - name: Determine version
         id: version
@@ -59,9 +59,9 @@ jobs:
           git push origin ${{ steps.tag.outputs.tag }}
 
       - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v6
+        uses: goreleaser/goreleaser-action@v7
         with:
-          version: latest
+          version: v2.13.3
           args: release --clean --release-notes ${{ steps.notes.outputs.release-notes }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

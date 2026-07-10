@@ -34,9 +34,9 @@ func enforceRequiresComment(configPath string, data []byte) error {
 	}
 	if semverLess(current, need) {
 		return fmt.Errorf(
-			"%s requires structlint >= v%s, but running version is v%s.\n"+
+			"%s requires structlint >= v%s, but running version is v%s; "+
 				"Upgrade the binary (go install github.com/AxeForging/structlint/cmd/structlint@latest) "+
-				"or pin the older feature set by removing the pragma.",
+				"or pin the older feature set by removing the pragma",
 			configPath, semverString(need), semverString(current),
 		)
 	}

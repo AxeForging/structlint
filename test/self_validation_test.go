@@ -11,83 +11,18 @@ import (
 	"github.com/AxeForging/structlint/internal/validator"
 )
 
-// TestSelfValidation validates our own project structure
+// TestSelfValidation validates the repository through the same built binary a
+// user and CI execute. This catches CLI wiring and rule-registry regressions
+// that direct calls to individual validator methods would miss.
 func TestSelfValidation(t *testing.T) {
-	// Check if our configuration file exists
-	configPath := ".structlint.yaml"
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		t.Skipf("Configuration file %s not found, skipping self-validation test", configPath)
-	}
-
-	// Load our own configuration
-	cfg, err := config.LoadConfig(configPath)
+	root := repoRoot(t)
+	bin := buildBinary(t)
+	out, err := runBinaryInDir(t, bin, root, "validate", "--config", ".structlint.yaml")
 	if err != nil {
-		t.Fatalf("Failed to load our own configuration: %v", err)
+		t.Fatalf("built binary rejected repository:\n%s", out)
 	}
-
-	// Create validator
-	logger, _ := logging.New("info", false) // Use info level to see what's happening
-	v := validator.New(cfg, logger)
-	v.Silent = false // Don't silence output for self-validation
-
-	t.Logf("Validating our own project structure with config: %s", configPath)
-	t.Logf("Allowed paths: %v", cfg.DirStructure.AllowedPaths)
-	t.Logf("Disallowed paths: %v", cfg.DirStructure.DisallowedPaths)
-	t.Logf("Allowed file patterns: %v", cfg.FileNamingPattern.Allowed)
-	t.Logf("Disallowed file patterns: %v", cfg.FileNamingPattern.Disallowed)
-	t.Logf("Ignored patterns: %v", cfg.Ignore)
-
-	// Validate our project structure
-	v.ValidateDirStructure(".")
-	v.ValidateFileNaming(".")
-
-	// Report results
-	t.Logf("Self-validation results: %d successes, %d failures", v.Successes, len(v.Errors))
-
-	// Check for critical errors (but allow some flexibility)
-	criticalErrors := []string{}
-	acceptableErrors := []string{}
-
-	for _, err := range v.Errors {
-		// Some errors might be acceptable for our current structure
-		if strings.Contains(err, "vendor") ||
-			strings.Contains(err, ".git") ||
-			strings.Contains(err, "bin") ||
-			strings.Contains(err, "dist") {
-			acceptableErrors = append(acceptableErrors, err)
-		} else {
-			criticalErrors = append(criticalErrors, err)
-		}
-	}
-
-	if len(criticalErrors) > 0 {
-		t.Errorf("Critical validation errors found (%d):", len(criticalErrors))
-		for _, err := range criticalErrors {
-			t.Errorf("  ❌ %s", err)
-		}
-	}
-
-	if len(acceptableErrors) > 0 {
-		t.Logf("Acceptable validation issues (%d):", len(acceptableErrors))
-		for _, err := range acceptableErrors {
-			t.Logf("  ⚠️  %s", err)
-		}
-	}
-
-	// Ensure we have some successes
-	if v.Successes == 0 {
-		t.Error("Expected at least some successful validations")
-	}
-
-	// Save a JSON report for analysis
-	reportPath := "validation-report.json"
-	if err := v.SaveJSONReport(reportPath); err != nil {
-		t.Logf("Failed to save validation report: %v", err)
-	} else {
-		t.Logf("Validation report saved to: %s", reportPath)
-		defer func() {
-			_ = os.Remove(reportPath) // Clean up
-		}()
+	if !strings.Contains(out, "0 violations found") {
+		t.Fatalf("expected successful self-validation summary, got:\n%s", out)
 	}
 }
 
@@ -175,10 +110,7 @@ func TestProjectStandardsCompliance(t *testing.T) {
 
 // TestConfigurationValidation tests our configuration file itself
 func TestConfigurationValidation(t *testing.T) {
-	configPath := ".structlint.yaml"
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		t.Skipf("Configuration file %s not found", configPath)
-	}
+	configPath := filepath.Join(repoRoot(t), ".structlint.yaml")
 
 	// Test that our config file is valid
 	cfg, err := config.LoadConfig(configPath)
@@ -220,6 +152,38 @@ func TestConfigurationValidation(t *testing.T) {
 	}
 
 	t.Log("✅ Configuration validation passed")
+}
+
+func TestSelfPolicyContainsArchitectureAndRepositoryContracts(t *testing.T) {
+	cfg, err := config.LoadConfig(filepath.Join(repoRoot(t), ".structlint.yaml"))
+	if err != nil {
+		t.Fatalf("load self policy: %v", err)
+	}
+
+	boundaryIDs := make(map[string]bool, len(cfg.Boundaries))
+	for _, rule := range cfg.Boundaries {
+		boundaryIDs[rule.ID] = true
+	}
+	for _, id := range []string{
+		"build-is-leaf",
+		"logging-is-leaf",
+		"config-does-not-import-features",
+		"validator-does-not-import-orchestration",
+	} {
+		if !boundaryIDs[id] {
+			t.Errorf("self policy missing architectural boundary %q", id)
+		}
+	}
+
+	groupIDs := make(map[string]bool, len(cfg.RequiredGroups))
+	for _, group := range cfg.RequiredGroups {
+		groupIDs[group.ID] = true
+	}
+	for _, id := range []string{"release-configuration", "public-schema", "shipped-agent-skill", "commands-have-entrypoints"} {
+		if !groupIDs[id] {
+			t.Errorf("self policy missing repository contract %q", id)
+		}
+	}
 }
 
 // TestRealWorldScenarios tests common real-world project scenarios

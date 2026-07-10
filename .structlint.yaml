@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/AxeForging/structlint/main/schema/structlint.schema.json
 # structlint configuration for this project
 # This file defines the standards for our own project structure
 
@@ -27,6 +28,8 @@ dir_structure:
     - "cmd"                 # Must have cmd directory
     - "internal"            # Must have internal directory
     - "test"                # Must have test directory
+    - "schema"              # Must ship the public configuration schema
+    - "skills"              # Must ship the agent skill
 
 file_naming_pattern:
   allowed:
@@ -101,6 +104,101 @@ file_naming_pattern:
     - "README.md"           # Project documentation
     - ".gitignore"          # Git ignore file
     - "*.go"                # At least one Go source file
+
+placement:
+  - id: built-in-presets-stay-with-config
+    files: ["generic.yaml", "*-standard.yaml"]
+    mustBeUnder: ["internal/config/presets/**"]
+    severity: error
+  - id: schema-files-stay-in-schema
+    files: ["*.schema.json"]
+    mustBeUnder: ["schema/**"]
+    severity: error
+  - id: agent-skills-stay-in-skills
+    files: ["SKILL.md"]
+    mustBeUnder: ["skills/**"]
+    severity: error
+  - id: go-tests-stay-with-go-code
+    files: ["*_test.go"]
+    mustBeUnder: ["*_test.go", "internal/**", "test/**"]
+    severity: error
+
+requiredGroups:
+  - id: build-entrypoint
+    oneOf: ["Makefile"]
+    severity: error
+  - id: release-configuration
+    oneOf: [".goreleaser.yml", ".goreleaser.yaml"]
+    severity: error
+  - id: public-schema
+    oneOf: ["schema/structlint.schema.json"]
+    severity: error
+  - id: shipped-agent-skill
+    oneOf: ["skills/structlint/SKILL.md"]
+    severity: error
+  - id: commands-have-entrypoints
+    eachDirMatching: "cmd/*"
+    mustContain: ["main.go"]
+    requireMatch: true
+    severity: error
+
+boundaries:
+  - id: build-is-leaf
+    from: "internal/build/**"
+    cannotImport: ["internal/**"]
+    severity: error
+  - id: logging-is-leaf
+    from: "internal/logging/**"
+    cannotImport: ["internal/**"]
+    severity: error
+  - id: config-does-not-import-features
+    from: "internal/config/**"
+    cannotImport:
+      - "internal/app/**"
+      - "internal/cli/**"
+      - "internal/hooks/**"
+      - "internal/infer/**"
+      - "internal/logging/**"
+      - "internal/suggest/**"
+      - "internal/validator/**"
+    severity: error
+  - id: validator-does-not-import-orchestration
+    from: "internal/validator/**"
+    cannotImport:
+      - "internal/app/**"
+      - "internal/cli/**"
+      - "internal/hooks/**"
+      - "internal/infer/**"
+      - "internal/logging/**"
+      - "internal/suggest/**"
+    severity: error
+  - id: hooks-do-not-import-orchestration
+    from: "internal/hooks/**"
+    cannotImport:
+      - "internal/app/**"
+      - "internal/cli/**"
+      - "internal/config/**"
+      - "internal/infer/**"
+      - "internal/logging/**"
+      - "internal/suggest/**"
+      - "internal/validator/**"
+    severity: error
+  - id: infer-does-not-import-orchestration
+    from: "internal/infer/**"
+    cannotImport:
+      - "internal/app/**"
+      - "internal/cli/**"
+      - "internal/hooks/**"
+      - "internal/suggest/**"
+    severity: error
+  - id: suggest-does-not-import-orchestration
+    from: "internal/suggest/**"
+    cannotImport:
+      - "internal/app/**"
+      - "internal/cli/**"
+      - "internal/hooks/**"
+      - "internal/infer/**"
+    severity: error
 
 ignore:
   # Version control

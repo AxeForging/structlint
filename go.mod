@@ -1,6 +1,6 @@
 module github.com/AxeForging/structlint
 
-go 1.24
+go 1.25
 
 require (
 	github.com/gobwas/glob v0.2.3
