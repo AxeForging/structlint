@@ -1,0 +1,7 @@
+- id: structlint
+  name: structlint
+  description: Validate project structure and file naming against .structlint.yaml
+  entry: structlint validate --staged --silent
+  language: golang
+  pass_filenames: false
+  always_run: true

@@ -673,14 +673,32 @@ structlint:
 <details>
 <summary><strong>Pre-commit Hook</strong></summary>
 
+Auto-install:
+
+```bash
+structlint hook install
+```
+
+Or with the [pre-commit framework](https://pre-commit.com):
+
 ```yaml
 # .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/AxeForging/structlint
+    rev: v0.X.Y  # first tag containing .pre-commit-hooks.yaml
+    hooks:
+      - id: structlint
+```
+
+Or as a local `.pre-commit-config.yaml` entry:
+
+```yaml
 repos:
   - repo: local
     hooks:
       - id: structlint
         name: structlint
-        entry: structlint validate --silent
+        entry: structlint validate --staged --silent
         language: system
         pass_filenames: false
         always_run: true

@@ -130,7 +130,40 @@ pipeline {
 
 ## Pre-commit Hook
 
-Add to `.pre-commit-config.yaml`:
+### Auto-install (recommended)
+
+```bash
+structlint hook install
+```
+
+Auto-detects lefthook, pre-commit, or a raw git hook and merges a `structlint validate --staged --silent` invocation. Idempotent.
+
+### pre-commit framework
+
+structlint ships a `.pre-commit-hooks.yaml`, so consumers can pin it directly:
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/AxeForging/structlint
+    rev: v0.X.Y  # first tag containing .pre-commit-hooks.yaml
+    hooks:
+      - id: structlint
+```
+
+The hook runs `structlint validate --staged --silent` via `language: golang`, so pre-commit clones the pinned rev and installs the binary in an isolated environment — no local install required.
+
+### lefthook
+
+```yaml
+# lefthook.yml
+pre-commit:
+  commands:
+    structlint:
+      run: structlint validate --staged --silent
+```
+
+### Raw `.pre-commit-config.yaml` (local)
 
 ```yaml
 repos:
@@ -138,19 +171,10 @@ repos:
     hooks:
       - id: structlint
         name: structlint
-        entry: structlint validate
+        entry: structlint validate --staged --silent
         language: system
         pass_filenames: false
         always_run: true
-```
-
-Or with lefthook (`.lefthook.yml`):
-
-```yaml
-pre-commit:
-  commands:
-    structlint:
-      run: structlint validate --silent
 ```
 
 ## Docker
