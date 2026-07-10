@@ -12,12 +12,52 @@ import (
 
 // Config represents the main configuration structure.
 type Config struct {
+	Extends           ExtendsList       `yaml:"extends" json:"extends"`
 	DirStructure      DirStructure      `yaml:"dir_structure" json:"dir_structure"`
 	FileNamingPattern FileNamingPattern `yaml:"file_naming_pattern" json:"file_naming_pattern"`
 	Ignore            []string          `yaml:"ignore" json:"ignore"`
 	Placement         []PlacementRule   `yaml:"placement" json:"placement"`
 	RequiredGroups    []RequiredGroup   `yaml:"requiredGroups" json:"requiredGroups"`
 	Boundaries        []BoundaryRule    `yaml:"boundaries" json:"boundaries"`
+}
+
+// ExtendsList accepts either a single string or a list of strings. Each
+// entry is a built-in preset name or a filesystem path relative to the
+// extending config file.
+type ExtendsList []string
+
+// UnmarshalYAML supports the scalar-or-sequence shape.
+func (e *ExtendsList) UnmarshalYAML(unmarshal func(any) error) error {
+	var single string
+	if err := unmarshal(&single); err == nil {
+		*e = ExtendsList{single}
+		return nil
+	}
+	var list []string
+	if err := unmarshal(&list); err != nil {
+		return err
+	}
+	*e = ExtendsList(list)
+	return nil
+}
+
+// UnmarshalJSON mirrors UnmarshalYAML for JSON configs.
+func (e *ExtendsList) UnmarshalJSON(data []byte) error {
+	trim := bytes.TrimSpace(data)
+	if len(trim) > 0 && trim[0] == '"' {
+		var single string
+		if err := json.Unmarshal(data, &single); err != nil {
+			return err
+		}
+		*e = ExtendsList{single}
+		return nil
+	}
+	var list []string
+	if err := json.Unmarshal(data, &list); err != nil {
+		return err
+	}
+	*e = ExtendsList(list)
+	return nil
 }
 
 // DirStructure represents the directory structure validation rules.
@@ -61,32 +101,44 @@ type BoundaryRule struct {
 	Severity     string   `yaml:"severity" json:"severity"`
 }
 
-// LoadConfig loads the configuration from a file.
+// LoadConfig loads the configuration from a file, resolving any `extends`
+// chain (built-in presets or paths relative to the extending file) and
+// merging parents-first. Strict parsing is preserved throughout.
 func LoadConfig(path string) (*Config, error) {
+	cfg, err := loadResolved(path, map[string]bool{}, 0)
+	if err != nil {
+		return nil, err
+	}
+	if err := cfg.Validate(); err != nil {
+		return nil, err
+	}
+	return cfg, nil
+}
+
+// parseConfigFile reads and strict-parses a single file. It does NOT resolve
+// extends or run Validate — that's loadResolved's job.
+func parseConfigFile(path string) (*Config, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
+	return parseConfigBytes(data, filepath.Ext(path))
+}
 
-	var config Config
-	ext := filepath.Ext(path)
-	if ext == ".yaml" || ext == ".yml" {
-		err = yaml.UnmarshalStrict(data, &config)
+func parseConfigBytes(data []byte, ext string) (*Config, error) {
+	var cfg Config
+	var err error
+	if ext == ".yaml" || ext == ".yml" || ext == "" {
+		err = yaml.UnmarshalStrict(data, &cfg)
 	} else {
 		decoder := json.NewDecoder(bytes.NewReader(data))
 		decoder.DisallowUnknownFields()
-		err = decoder.Decode(&config)
+		err = decoder.Decode(&cfg)
 	}
-
 	if err != nil {
 		return nil, err
 	}
-
-	if err := config.Validate(); err != nil {
-		return nil, err
-	}
-
-	return &config, nil
+	return &cfg, nil
 }
 
 // Validate catches malformed rule definitions before repository walking starts.

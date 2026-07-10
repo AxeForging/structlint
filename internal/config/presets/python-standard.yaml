@@ -1,0 +1,57 @@
+dir_structure:
+  allowedPaths:
+    - "."
+    - "src/**"
+    - "tests/**"
+    - "test/**"
+    - "docs/**"
+    - "scripts/**"
+    - ".github/**"
+  disallowedPaths:
+    - "__pycache__/**"
+    - ".tox/**"
+    - "*.egg-info/**"
+    - "node_modules/**"
+  requiredPaths: []
+
+file_naming_pattern:
+  allowed:
+    - "*.py"
+    - "*.pyi"
+    - "*.toml"
+    - "*.cfg"
+    - "*.ini"
+    - "*.txt"
+    - "*.yaml"
+    - "*.yml"
+    - "*.json"
+    - "*.md"
+    - "*.rst"
+    - "Makefile"
+    - "Dockerfile*"
+    - "*.sh"
+    - ".gitignore"
+    - ".flake8"
+    - "LICENSE*"
+    - "MANIFEST.in"
+  disallowed:
+    - "*.env*"
+    - "*.key"
+    - "*.pem"
+    - ".DS_Store"
+    - "*.log"
+    - "*~"
+    - "*.swp"
+    - "*.pyc"
+  required:
+    - "README.md"
+
+ignore:
+  - ".git"
+  - "__pycache__"
+  - ".tox"
+  - ".venv"
+  - "venv"
+  - "dist"
+  - "build"
+  - "*.egg-info"

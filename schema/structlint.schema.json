@@ -10,6 +10,16 @@
       "type": "string",
       "description": "Reserved for JSON configs that reference this schema directly. YAML users should use the yaml-language-server modeline instead."
     },
+    "extends": {
+      "description": "Config chain. Each entry is a built-in preset name (go-standard, node-standard, python-standard, generic) or a filesystem path relative to this file. Parents are resolved first; child overlays on top with string-slice dedup and by-id replacement for placement/requiredGroups/boundaries. Depth cap 10; cycles detected. REQUIRES structlint >= v0.6.0 (older binaries strict-fail on this key).",
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      ]
+    },
     "dir_structure": {
       "type": "object",
       "additionalProperties": false,

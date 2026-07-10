@@ -39,6 +39,37 @@ ignore: []              # Paths to skip during validation
 
 Configuration loading is strict. Unknown keys such as `allowed_paths` fail before validation starts, which helps catch CI drift caused by typos.
 
+### Sharing config with `extends`
+
+A config can inherit from one or more parents:
+
+```yaml
+# Requires structlint >= v0.6.0 — older binaries reject the `extends` key.
+extends: go-standard
+dir_structure:
+  allowedPaths:
+    - "tools/**"     # additional paths on top of the preset
+```
+
+`extends` accepts a string or a list. Each entry is either a **built-in preset** or a **filesystem path relative to this file**.
+
+**Built-in presets:**
+
+| Name | Baseline for |
+|------|--------------|
+| `go-standard` | Go projects (cmd/, internal/, pkg/, ...) |
+| `node-standard` | Node.js / TypeScript projects |
+| `python-standard` | Python projects (src/, tests/, ...) |
+| `generic` | Language-agnostic starter |
+
+**Merge rules:**
+
+- String slices (`ignore`, `dir_structure.*`, `file_naming_pattern.*`) — parent entries first, then child entries not already present. Order stable, exact-string dedup.
+- `placement`, `requiredGroups`, `boundaries` — keyed by `id`. Same ID → child rule replaces the parent's wholesale. New IDs append.
+- Parents resolve depth-first. Chains are cycle-checked and capped at depth 10.
+
+**Compatibility warning:** the `extends` key requires structlint **v0.6.0 or newer**. Older binaries strict-parse the file and reject it with `field extends not found in type config.Config` — pin your CI action and pre-commit rev to a version that supports it, and add a `# requires structlint >= vX.Y` comment at the top of configs that use `extends`.
+
 ### Editor autocomplete via JSON Schema
 
 structlint ships a JSON Schema at [`schema/structlint.schema.json`](https://github.com/AxeForging/structlint/blob/main/schema/structlint.schema.json). Add this modeline to the top of your `.structlint.yaml` for completion, hover docs, and pre-run validation:

@@ -1,0 +1,60 @@
+dir_structure:
+  allowedPaths:
+    - "."
+    - "src/**"
+    - "lib/**"
+    - "test/**"
+    - "tests/**"
+    - "__tests__/**"
+    - "docs/**"
+    - "scripts/**"
+    - "public/**"
+    - "config/**"
+    - ".github/**"
+  disallowedPaths:
+    - "node_modules/**"
+    - "tmp/**"
+    - "temp/**"
+  requiredPaths:
+    - "src"
+
+file_naming_pattern:
+  allowed:
+    - "*.js"
+    - "*.ts"
+    - "*.jsx"
+    - "*.tsx"
+    - "*.json"
+    - "*.yaml"
+    - "*.yml"
+    - "*.md"
+    - "*.css"
+    - "*.scss"
+    - "*.html"
+    - "*.svg"
+    - "*.png"
+    - "*.jpg"
+    - ".gitignore"
+    - ".eslintrc*"
+    - ".prettierrc*"
+    - "*.config.*"
+    - "Dockerfile*"
+    - "LICENSE*"
+  disallowed:
+    - "*.env*"
+    - "*.key"
+    - "*.pem"
+    - ".DS_Store"
+    - "*.log"
+    - "*~"
+    - "*.swp"
+  required:
+    - "package.json"
+    - "README.md"
+
+ignore:
+  - ".git"
+  - "node_modules"
+  - "dist"
+  - "build"
+  - "coverage"

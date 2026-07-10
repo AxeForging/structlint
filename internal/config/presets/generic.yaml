@@ -1,0 +1,37 @@
+dir_structure:
+  allowedPaths:
+    - "."
+    - "src/**"
+    - "lib/**"
+    - "test/**"
+    - "tests/**"
+    - "docs/**"
+    - "scripts/**"
+    - ".github/**"
+  disallowedPaths:
+    - "tmp/**"
+    - "temp/**"
+    - "node_modules/**"
+  requiredPaths: []
+
+file_naming_pattern:
+  allowed:
+    - "*.*"
+  disallowed:
+    - "*.env*"
+    - "*.key"
+    - "*.pem"
+    - ".DS_Store"
+    - "*.log"
+    - "*.tmp"
+    - "*~"
+    - "*.swp"
+  required:
+    - "README.md"
+
+ignore:
+  - ".git"
+  - "node_modules"
+  - "vendor"
+  - "dist"
+  - "build"
