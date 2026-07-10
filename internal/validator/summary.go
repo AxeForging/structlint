@@ -3,7 +3,6 @@ package validator
 import (
 	"fmt"
 	"sort"
-	"strings"
 )
 
 // ViolationSummary represents grouped violations by type
@@ -22,65 +21,38 @@ type ValidationSummary struct {
 	AllErrors      []string           `json:"all_errors,omitempty"` // Only included if requested
 }
 
-// GroupViolationsByType groups errors by type and provides examples
+// GroupViolationsByType groups violations by their structured Code and
+// returns per-group summaries. Grouping is keyed on Violation.Code (not
+// on message text): every rule already tags its violations, and messages
+// are for humans. Unknown codes bucket into "other" as a defensive
+// fallback so a new rule that forgets to register a code still surfaces.
 func (v *Validator) GroupViolationsByType() []ViolationSummary {
-	violationMap := make(map[string][]string)
-
-	// Group violations by type
-	for _, err := range v.Errors {
-		var violationType string
-		if strings.Contains(err, "Disallowed directory found:") {
-			violationType = "disallowed_directory"
-		} else if strings.Contains(err, "Directory not in allowed list:") {
-			violationType = "unallowed_directory"
-		} else if strings.Contains(err, "Disallowed file naming pattern found:") {
-			violationType = "disallowed_file_pattern"
-		} else if strings.Contains(err, "File not in allowed naming pattern:") {
-			violationType = "unallowed_file_pattern"
-		} else if strings.Contains(err, "Required directory missing:") {
-			violationType = "missing_required_directory"
-		} else if strings.Contains(err, "Required file pattern missing:") {
-			violationType = "missing_required_file"
-		} else {
-			violationType = "other"
+	violationMap := make(map[string][]string, len(CodeDescriptions))
+	for _, viol := range v.Violations {
+		code := viol.Code
+		if code == "" {
+			code = "other"
 		}
-
-		violationMap[violationType] = append(violationMap[violationType], err)
+		violationMap[code] = append(violationMap[code], viol.Message)
 	}
 
-	// Convert to summary format
-	var summaries []ViolationSummary
-	for violationType, errors := range violationMap {
-		summary := ViolationSummary{
-			Type:     violationType,
-			Count:    len(errors),
-			Examples: getExamples(errors, 3), // Show up to 3 examples
-		}
-
-		// Add description
-		switch violationType {
-		case "disallowed_directory":
-			summary.Description = "Directories that are explicitly disallowed"
-		case "unallowed_directory":
-			summary.Description = "Directories not in the allowed list"
-		case "disallowed_file_pattern":
-			summary.Description = "Files matching disallowed naming patterns"
-		case "unallowed_file_pattern":
-			summary.Description = "Files not matching any allowed naming pattern"
-		case "missing_required_directory":
-			summary.Description = "Required directories that are missing"
-		case "missing_required_file":
-			summary.Description = "Required file patterns that are missing"
-		default:
-			summary.Description = "Other validation errors"
-		}
-
-		summaries = append(summaries, summary)
+	summaries := make([]ViolationSummary, 0, len(violationMap))
+	for code, messages := range violationMap {
+		summaries = append(summaries, ViolationSummary{
+			Type:        code,
+			Count:       len(messages),
+			Examples:    getExamples(messages, 3),
+			Description: DescribeCode(code),
+		})
 	}
 
-	// Sort by count (highest first)
+	// Sort by count descending, tie-break on Type ascending so equal-count
+	// groups render deterministically (required by spec 005's goldens).
 	sort.Slice(summaries, func(i, j int) bool {
-		return summaries[i].Count > summaries[j].Count
+		if summaries[i].Count != summaries[j].Count {
+			return summaries[i].Count > summaries[j].Count
+		}
+		return summaries[i].Type < summaries[j].Type
 	})
 
 	return summaries
