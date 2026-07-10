@@ -100,7 +100,15 @@ ignore:
 structlint validate
 ```
 
-### 3. View Results
+### 3. Wire into your pre-commit hooks
+
+```bash
+structlint hook install
+```
+
+Auto-detects lefthook, pre-commit, or a raw git hook and merges a `structlint validate --staged --silent` invocation into it. Idempotent — safe to re-run. Use `--dry-run` to preview.
+
+### 4. View Results
 
 **Passing:**
 ```
