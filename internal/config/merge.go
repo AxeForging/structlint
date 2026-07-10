@@ -21,6 +21,29 @@ var presetNames = map[string]string{
 	"generic":         "presets/generic.yaml",
 }
 
+// ReadPreset returns the raw YAML bytes of a preset by name (as it would
+// appear in `extends:`). Exposed for `structlint init` so the four
+// project templates are stored in one place instead of duplicated as
+// Go string literals in internal/cli/init.go.
+func ReadPreset(name string) ([]byte, error) {
+	path, ok := presetNames[name]
+	if !ok {
+		return nil, fmt.Errorf("unknown preset %q (valid: %s)", name, presetsList())
+	}
+	return presetFS.ReadFile(path)
+}
+
+// PresetNames returns the sorted list of built-in preset names for
+// error messages and completion.
+func PresetNames() []string {
+	out := make([]string, 0, len(presetNames))
+	for name := range presetNames {
+		out = append(out, name)
+	}
+	sort.Strings(out)
+	return out
+}
+
 const maxExtendsDepth = 10
 
 // loadResolved parses path, resolves its extends chain depth-first with

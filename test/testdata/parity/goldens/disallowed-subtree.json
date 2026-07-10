@@ -1,0 +1,33 @@
+✗ Disallowed directory found: tmp
+{
+  "successes": 7,
+  "failures": 1,
+  "total_violations": 1,
+  "errors": [
+    "Disallowed directory found: tmp"
+  ],
+  "violations": [
+    {
+      "code": "disallowed_directory",
+      "severity": "error",
+      "path": "tmp",
+      "rule": "tmp/**",
+      "message": "Disallowed directory found: tmp"
+    }
+  ],
+  "summary": {
+    "total_successes": 7,
+    "total_failures": 1,
+    "violations": [
+      {
+        "type": "disallowed_directory",
+        "count": 1,
+        "examples": [
+          "Disallowed directory found: tmp"
+        ],
+        "description": "Directories that are explicitly disallowed"
+      }
+    ]
+  }
+}
+validation failed with 1 errors

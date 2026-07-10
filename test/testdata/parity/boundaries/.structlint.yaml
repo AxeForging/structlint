@@ -1,0 +1,17 @@
+dir_structure:
+  allowedPaths:
+    - "."
+    - "internal/**"
+file_naming_pattern:
+  allowed:
+    - "*.go"
+    - "*.mod"
+    - "*.md"
+    - "*.yaml"
+boundaries:
+  - id: domain-no-infra
+    from: "internal/domain/**"
+    cannotImport:
+      - "internal/db/**"
+ignore:
+  - ".git"

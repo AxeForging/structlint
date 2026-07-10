@@ -6,10 +6,33 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
+	"github.com/AxeForging/structlint/internal/config"
 	"github.com/AxeForging/structlint/internal/infer"
 	"github.com/urfave/cli/v3"
 )
+
+// projectTypeToPreset maps `init --type` values to preset names in
+// internal/config/presets/. Kept as a distinct map (instead of using the
+// preset names directly as --type values) so the shorter --type flag is
+// still ergonomic and the preset names remain the source of truth.
+var projectTypeToPreset = map[string]string{
+	"go":      "go-standard",
+	"node":    "node-standard",
+	"python":  "python-standard",
+	"generic": "generic",
+}
+
+// projectTypeHeaders is the single-line header prepended to the preset
+// content so the generated config file reads like a starter template
+// instead of a bare preset dump.
+var projectTypeHeaders = map[string]string{
+	"go":      "# structlint configuration for Go projects\n",
+	"node":    "# structlint configuration for Node.js projects\n",
+	"python":  "# structlint configuration for Python projects\n",
+	"generic": "# structlint configuration\n",
+}
 
 // NewInitCmd creates the init command for generating starter configs.
 func NewInitCmd() *cli.Command {
@@ -62,12 +85,11 @@ func NewInitCmd() *cli.Command {
 				projectType = detectProjectType(".")
 			}
 
-			template, ok := projectTemplates[projectType]
-			if !ok {
-				return fmt.Errorf("unknown project type: %s (available: go, node, python, generic)", projectType)
+			data, err := renderProjectTemplate(projectType)
+			if err != nil {
+				return err
 			}
-
-			if err := os.WriteFile(configPath, []byte(template), 0o644); err != nil {
+			if err := os.WriteFile(configPath, data, 0o644); err != nil {
 				return fmt.Errorf("failed to write configuration: %w", err)
 			}
 
@@ -76,6 +98,43 @@ func NewInitCmd() *cli.Command {
 			return nil
 		},
 	}
+}
+
+// renderProjectTemplate builds a starter config for the requested project
+// type by reading the corresponding preset (source of truth for the
+// baseline rules) and prepending a project-typed comment header. This
+// keeps init's output and `extends:` presets from drifting.
+func renderProjectTemplate(projectType string) ([]byte, error) {
+	presetName, ok := projectTypeToPreset[projectType]
+	if !ok {
+		return nil, fmt.Errorf("unknown project type: %s (available: %s)",
+			projectType, strings.Join(projectTypeList(), ", "))
+	}
+	body, err := config.ReadPreset(presetName)
+	if err != nil {
+		return nil, fmt.Errorf("read preset for %s: %w", projectType, err)
+	}
+	header := projectTypeHeaders[projectType]
+	buf := make([]byte, 0, len(header)+len(body))
+	buf = append(buf, header...)
+	buf = append(buf, body...)
+	return buf, nil
+}
+
+func projectTypeList() []string {
+	out := make([]string, 0, len(projectTypeToPreset))
+	for k := range projectTypeToPreset {
+		out = append(out, k)
+	}
+	// Alphabetical for stable error messages.
+	for i := 1; i < len(out); i++ {
+		j := i
+		for j > 0 && out[j-1] > out[j] {
+			out[j-1], out[j] = out[j], out[j-1]
+			j--
+		}
+	}
+	return out
 }
 
 // detectProjectType guesses the project type from files in the directory.
@@ -98,225 +157,4 @@ func detectProjectType(dir string) string {
 	}
 
 	return "generic"
-}
-
-var projectTemplates = map[string]string{
-	"go": `# structlint configuration for Go projects
-dir_structure:
-  allowedPaths:
-    - "."
-    - "cmd/**"
-    - "internal/**"
-    - "pkg/**"
-    - "api/**"
-    - "test/**"
-    - "docs/**"
-    - "scripts/**"
-    - ".github/**"
-  disallowedPaths:
-    - "vendor/**"
-    - "node_modules/**"
-    - "tmp/**"
-  requiredPaths:
-    - "cmd"
-
-file_naming_pattern:
-  allowed:
-    - "*.go"
-    - "*.mod"
-    - "*.sum"
-    - "*.yaml"
-    - "*.yml"
-    - "*.json"
-    - "*.md"
-    - "*.txt"
-    - "Makefile"
-    - "Dockerfile*"
-    - "*.sh"
-    - ".gitignore"
-    - ".goreleaser.yaml"
-    - "LICENSE*"
-  disallowed:
-    - "*.env*"
-    - "*.key"
-    - "*.pem"
-    - ".DS_Store"
-    - "*.log"
-    - "*.tmp"
-    - "*~"
-    - "*.swp"
-  required:
-    - "go.mod"
-    - "README.md"
-    - ".gitignore"
-
-ignore:
-  - ".git"
-  - "vendor"
-  - "bin"
-  - "dist"
-`,
-
-	"node": `# structlint configuration for Node.js projects
-dir_structure:
-  allowedPaths:
-    - "."
-    - "src/**"
-    - "lib/**"
-    - "test/**"
-    - "tests/**"
-    - "__tests__/**"
-    - "docs/**"
-    - "scripts/**"
-    - "public/**"
-    - "config/**"
-    - ".github/**"
-  disallowedPaths:
-    - "node_modules/**"
-    - "tmp/**"
-    - "temp/**"
-  requiredPaths:
-    - "src"
-
-file_naming_pattern:
-  allowed:
-    - "*.js"
-    - "*.ts"
-    - "*.jsx"
-    - "*.tsx"
-    - "*.json"
-    - "*.yaml"
-    - "*.yml"
-    - "*.md"
-    - "*.css"
-    - "*.scss"
-    - "*.html"
-    - "*.svg"
-    - "*.png"
-    - "*.jpg"
-    - ".gitignore"
-    - ".eslintrc*"
-    - ".prettierrc*"
-    - "*.config.*"
-    - "Dockerfile*"
-    - "LICENSE*"
-  disallowed:
-    - "*.env*"
-    - "*.key"
-    - "*.pem"
-    - ".DS_Store"
-    - "*.log"
-    - "*~"
-    - "*.swp"
-  required:
-    - "package.json"
-    - "README.md"
-
-ignore:
-  - ".git"
-  - "node_modules"
-  - "dist"
-  - "build"
-  - "coverage"
-`,
-
-	"python": `# structlint configuration for Python projects
-dir_structure:
-  allowedPaths:
-    - "."
-    - "src/**"
-    - "tests/**"
-    - "test/**"
-    - "docs/**"
-    - "scripts/**"
-    - ".github/**"
-  disallowedPaths:
-    - "__pycache__/**"
-    - ".tox/**"
-    - "*.egg-info/**"
-    - "node_modules/**"
-  requiredPaths: []
-
-file_naming_pattern:
-  allowed:
-    - "*.py"
-    - "*.pyi"
-    - "*.toml"
-    - "*.cfg"
-    - "*.ini"
-    - "*.txt"
-    - "*.yaml"
-    - "*.yml"
-    - "*.json"
-    - "*.md"
-    - "*.rst"
-    - "Makefile"
-    - "Dockerfile*"
-    - "*.sh"
-    - ".gitignore"
-    - ".flake8"
-    - "LICENSE*"
-    - "MANIFEST.in"
-  disallowed:
-    - "*.env*"
-    - "*.key"
-    - "*.pem"
-    - ".DS_Store"
-    - "*.log"
-    - "*~"
-    - "*.swp"
-    - "*.pyc"
-  required:
-    - "README.md"
-
-ignore:
-  - ".git"
-  - "__pycache__"
-  - ".tox"
-  - ".venv"
-  - "venv"
-  - "dist"
-  - "build"
-  - "*.egg-info"
-`,
-
-	"generic": `# structlint configuration
-dir_structure:
-  allowedPaths:
-    - "."
-    - "src/**"
-    - "lib/**"
-    - "test/**"
-    - "tests/**"
-    - "docs/**"
-    - "scripts/**"
-    - ".github/**"
-  disallowedPaths:
-    - "tmp/**"
-    - "temp/**"
-    - "node_modules/**"
-  requiredPaths: []
-
-file_naming_pattern:
-  allowed:
-    - "*.*"
-  disallowed:
-    - "*.env*"
-    - "*.key"
-    - "*.pem"
-    - ".DS_Store"
-    - "*.log"
-    - "*.tmp"
-    - "*~"
-    - "*.swp"
-  required:
-    - "README.md"
-
-ignore:
-  - ".git"
-  - "node_modules"
-  - "vendor"
-  - "dist"
-  - "build"
-`,
 }

@@ -1,0 +1,19 @@
+✗ Directory cmd/broken missing required file: main.go
+✗ Required group missing one of: Makefile, Taskfile.yml
+
+--- Validation Summary ---
+✓ 9 files/directories passed validation
+✗ 2 violations found
+
+--- Validation Summary ---
+✓ 9 checks passed
+✗ 2 checks failed
+
+--- Violation Summary ---
+
+Directories missing files required by their group (1 violations):
+  - Directory cmd/broken missing required file: main.go
+
+Required groups with no matching file (1 violations):
+  - Required group missing one of: Makefile, Taskfile.yml
+validation failed with 2 errors

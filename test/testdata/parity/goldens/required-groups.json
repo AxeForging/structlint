@@ -1,0 +1,50 @@
+✗ Directory cmd/broken missing required file: main.go
+✗ Required group missing one of: Makefile, Taskfile.yml
+{
+  "successes": 9,
+  "failures": 2,
+  "total_violations": 2,
+  "errors": [
+    "Directory cmd/broken missing required file: main.go",
+    "Required group missing one of: Makefile, Taskfile.yml"
+  ],
+  "violations": [
+    {
+      "code": "missing_required_group",
+      "severity": "error",
+      "path": "build-entrypoint",
+      "rule": "build-entrypoint",
+      "message": "Required group missing one of: Makefile, Taskfile.yml"
+    },
+    {
+      "code": "missing_group_file",
+      "severity": "error",
+      "path": "cmd/broken/main.go",
+      "rule": "commands-have-main",
+      "message": "Directory cmd/broken missing required file: main.go"
+    }
+  ],
+  "summary": {
+    "total_successes": 9,
+    "total_failures": 2,
+    "violations": [
+      {
+        "type": "missing_group_file",
+        "count": 1,
+        "examples": [
+          "Directory cmd/broken missing required file: main.go"
+        ],
+        "description": "Directories missing files required by their group"
+      },
+      {
+        "type": "missing_required_group",
+        "count": 1,
+        "examples": [
+          "Required group missing one of: Makefile, Taskfile.yml"
+        ],
+        "description": "Required groups with no matching file"
+      }
+    ]
+  }
+}
+validation failed with 2 errors

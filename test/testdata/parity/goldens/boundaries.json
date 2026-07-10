@@ -1,0 +1,33 @@
+✗ Boundary violation: internal/domain/model.go imports example.com/fixture/internal/db
+{
+  "successes": 12,
+  "failures": 1,
+  "total_violations": 1,
+  "errors": [
+    "Boundary violation: internal/domain/model.go imports example.com/fixture/internal/db"
+  ],
+  "violations": [
+    {
+      "code": "boundary_violation",
+      "severity": "error",
+      "path": "internal/domain/model.go",
+      "rule": "domain-no-infra",
+      "message": "Boundary violation: internal/domain/model.go imports example.com/fixture/internal/db"
+    }
+  ],
+  "summary": {
+    "total_successes": 12,
+    "total_failures": 1,
+    "violations": [
+      {
+        "type": "boundary_violation",
+        "count": 1,
+        "examples": [
+          "Boundary violation: internal/domain/model.go imports example.com/fixture/internal/db"
+        ],
+        "description": "Files importing paths forbidden by boundary rules"
+      }
+    ]
+  }
+}
+validation failed with 1 errors
