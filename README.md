@@ -516,9 +516,9 @@ structlint completion fish > ~/.config/fish/completions/structlint.fish
 Install without running Structlint (for Gauntlet or custom pipelines):
 
 ```yaml
-- uses: AxeForging/structlint/setup@v0.6.0
+- uses: AxeForging/structlint/setup@v0.6.1
   with:
-    version: v0.6.0
+    version: v0.6.1
 ```
 
 Pin both references for reproducible CI; use `version: latest` only when
