@@ -1,0 +1,31 @@
+# structlint
+
+> Validates a project's directory structure and file naming patterns against a config you write once, then enforces it in CI or a pre-commit hook.
+
+structlint is a CLI tool that checks a project's directory layout and file naming against a `.structlint.yaml` config: allowed/disallowed directories, allowed/disallowed file patterns, required files, and — for organizations that need more — placement rules, required file groups, and language-aware import boundaries for Go, JavaScript, TypeScript, and Python. Violations are reported through 13 frozen, machine-readable violation codes, so tooling and AI agents can key on `code` rather than parsing message text.
+
+## What it checks
+
+- **Directory structure**: allowed/disallowed/required paths via glob patterns (`cmd/**`, `vendor/**`, etc.)
+- **File naming**: allowed/disallowed file patterns and required files (e.g. `README.md`, `go.mod`)
+- **Placement rules**: e.g. "all `*.sql` files must live under `migrations/**`"
+- **Required groups**: e.g. "every `cmd/*` directory must contain a `main.go`"
+- **Import boundaries**: language-aware rules blocking cross-layer imports (Go, JS/TS, Python)
+
+## Ways to run it
+
+- **CLI**: `structlint validate`, with `--json-output`, `--format github`/SARIF, `--silent`, and `--staged` modes
+- **GitHub Action**: `AxeForging/structlint@main`, with optional `comment-on-pr` to post violations directly on a pull request, or a reusable workflow for organization-wide standardization
+- **Pre-commit hook**: `structlint hook install`, or via the `pre-commit` framework
+- **GitLab CI**: same binary, invoked as a script step
+- **AI agent skill**: ships `skills/structlint/SKILL.md` for Claude Code and other MCP-based agents, covering the violation-code decision table and a suggest → apply → re-validate fix loop
+
+## Output formats
+
+JSON reports include success/failure counts, a list of violation messages, and a summary of directories/files checked — consumable by CI artifacts or the GitHub Action's job summary and PR comments.
+
+## Contact & links
+
+- Repository: https://github.com/AxeForging/structlint
+- Website: https://axeforging.github.io/structlint/
+- License: MIT
