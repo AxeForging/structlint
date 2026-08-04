@@ -170,10 +170,10 @@
   .usecase-card code { font-family: var(--af-font-mono); background: var(--af-surface); padding: 0.15em 0.4em; border-radius: 4px; font-size: 0.82em; display: inline-block; margin-top: 0.4rem; overflow-wrap: break-word; }
 
   /* ---- Integrations table ---- */
-  table { width: 100%; border-collapse: collapse; }
-  th, td { text-align: left; padding: 0.65rem 0.9rem; border-bottom: 1px solid var(--af-line); }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  th, td { text-align: left; padding: 0.65rem 0.9rem; border-bottom: 1px solid var(--af-line); overflow-wrap: anywhere; }
   th { color: var(--af-text-muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--af-font-mono); }
-  code { font-family: var(--af-font-mono); background: var(--af-surface); padding: 0.15em 0.45em; border-radius: 4px; font-size: 0.9em; }
+  code { font-family: var(--af-font-mono); background: var(--af-surface); padding: 0.15em 0.45em; border-radius: 4px; font-size: 0.9em; overflow-wrap: anywhere; }
 
   /* ---- Install ---- */
   .install-steps { counter-reset: install; display: flex; flex-direction: column; gap: 0.9rem; max-width: 56ch; margin: 0 0 1.75rem; }
@@ -187,7 +187,7 @@
   .install-step .n::before { content: counter(install); }
   .install-step p { margin: 0; color: var(--af-text-muted); line-height: 1.55; }
   .install-step p strong { color: var(--af-text); }
-  .install-step pre { margin: 0.5rem 0 0; overflow-x: auto; }
+  .install-step pre { margin: 0.5rem 0 0; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
   footer { padding: 3rem 0 4rem; text-align: center; color: var(--af-text-muted); font-size: 0.9rem; }
   footer a { text-decoration: underline; text-decoration-color: var(--af-line); text-underline-offset: 3px; }
@@ -293,7 +293,7 @@
       <table>
         <tr><th>Integration</th><th>Setup</th><th>Output</th></tr>
         <tr><td>GitHub Action</td><td><code>AxeForging/structlint@main</code>, no Go install</td><td><code>--format github</code> annotations, optional PR comments</td></tr>
-        <tr><td>Reusable workflow</td><td><code>AxeForging/structlint/.github/workflows/structlint.yml@main</code></td><td>JSON report artifact upload</td></tr>
+        <tr><td>Setup action</td><td><code>AxeForging/structlint/setup@v0.6.1</code>, install only</td><td>Verified binary on <code>PATH</code> for a custom pipeline step</td></tr>
         <tr><td>Pre-commit hook</td><td><code>structlint hook install</code> — detects lefthook, pre-commit, or raw git</td><td><code>validate --staged --silent</code>, idempotent</td></tr>
         <tr><td>Code scanning</td><td>Any CI runner</td><td><code>--format sarif</code></td></tr>
       </table>
