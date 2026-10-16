@@ -58,3 +58,14 @@ ignore:
   - "dist"
   - "build"
   - "coverage"
+
+# Max lines per file (requires structlint >= v0.7.0). Uncomment to enable.
+# The first matching rule wins; lines are counted like `wc -l`.
+# file_size:
+#   rules:
+#     - pattern: "**/*.{ts,tsx,js,jsx}"
+#       maxLines: 400
+#   exclude:
+#     - "**/*.test.*"
+#     - "**/*.spec.*"
+#     - "**/*.d.ts"

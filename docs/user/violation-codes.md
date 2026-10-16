@@ -4,7 +4,7 @@ Every violation structlint emits carries a stable machine-readable `code` (visib
 
 **The codes below are frozen and append-only.** Existing codes are never renamed or removed; new rules add new codes. If you're building tooling on top of structlint output — an editor plugin, a CI parser, an AI agent — key on `code`, not on `message` text.
 
-The 13 codes below correspond one-to-one to the `CodeDescriptions` registry in `internal/validator/codes.go`. Both directions are enforced by a test: adding a code without documenting it (or documenting one that doesn't exist) breaks the build.
+The 14 codes below correspond one-to-one to the `CodeDescriptions` registry in `internal/validator/codes.go`. Both directions are enforced by a test: adding a code without documenting it (or documenting one that doesn't exist) breaks the build.
 
 ## Codes
 
@@ -72,3 +72,8 @@ Typical fix: operational — fix the source file, or exclude it via `ignore`.
 Emitted by: any rule whose filesystem walk fails.  
 Meaning: an I/O error reached structlint (permission denied, missing directory, disk error).  
 Typical fix: operational — resolve the underlying filesystem issue.
+
+### `file_too_long`
+Emitted by: `file_size.rules[]` — the first rule whose `pattern` matches a non-excluded file.  
+Meaning: the file has more lines than the rule's `maxLines` (counted like `wc -l`). The violation `rule` is the matching pattern; the message carries the count and the limit, e.g. `File too long: app/service.py has 412 lines (max 300)`.  
+Typical fix: **tree** — split the file into cohesive modules. Adjust config (`maxLines`, `file_size.exclude`) only for generated, vendored or migration files.

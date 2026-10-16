@@ -51,3 +51,13 @@ ignore:
   - "vendor"
   - "bin"
   - "dist"
+
+# Max lines per file (requires structlint >= v0.7.0). Uncomment to enable.
+# The first matching rule wins; lines are counted like `wc -l`.
+# file_size:
+#   rules:
+#     - pattern: "**/*.go"
+#       maxLines: 500
+#   exclude:
+#     - "**/*_test.go"
+#     - "**/*.pb.go"

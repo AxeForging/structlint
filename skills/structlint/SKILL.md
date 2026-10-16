@@ -21,7 +21,7 @@ structlint is a Go CLI that validates project structure against `.structlint.yam
 
 ## Violation codes and how to fix
 
-The 13 codes below are **frozen**: names never change and never disappear. New rules add new codes. Full detail in [docs/user/violation-codes.md](../../docs/user/violation-codes.md).
+The 14 codes below are **frozen**: names never change and never disappear. New rules add new codes. Full detail in [docs/user/violation-codes.md](../../docs/user/violation-codes.md).
 
 | Code | Emitted by | Typical fix |
 |------|------------|-------------|
@@ -38,6 +38,7 @@ The 13 codes below are **frozen**: names never change and never disappear. New r
 | `boundary_violation` | `boundaries[]` | **Tree.** Refactor the import — no mechanical fix; needs human judgment. |
 | `parse_error` | Boundary rules parsing a source file | **Operational.** Fix the source file (or exclude it via `ignore`). |
 | `walk_error` | Filesystem walk failure | **Operational.** Permissions, missing dir, disk error. |
+| `file_too_long` | `file_size.rules[]` | **Tree.** Split the file into cohesive modules. Raise the limit or add to `file_size.exclude` only for generated/vendored files. |
 
 ## Machine contracts
 

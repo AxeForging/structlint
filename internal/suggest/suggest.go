@@ -99,7 +99,8 @@ func propose(cfg *config.Config, v validator.Violation) (Proposal, bool) {
 			Paths:  []string{v.Path},
 		}, true
 	default:
-		// boundary_violation, missing_required_group*, parse_error, walk_error.
+		// boundary_violation, file_too_long, missing_required_group*,
+		// parse_error, walk_error.
 		return Proposal{
 			Kind:   KindNote,
 			Reason: reason + " — no mechanical fix; needs human judgment",

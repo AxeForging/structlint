@@ -2,7 +2,7 @@
 
 > Validates a project's directory structure and file naming patterns against a config you write once, then enforces it in CI or a pre-commit hook.
 
-structlint is a CLI tool that checks a project's directory layout and file naming against a `.structlint.yaml` config: allowed/disallowed directories, allowed/disallowed file patterns, required files, and — for organizations that need more — placement rules, required file groups, and language-aware import boundaries for Go, JavaScript, TypeScript, and Python. Violations are reported through 13 frozen, machine-readable violation codes, so tooling and AI agents can key on `code` rather than parsing message text.
+structlint is a CLI tool that checks a project's directory layout and file naming against a `.structlint.yaml` config: allowed/disallowed directories, allowed/disallowed file patterns, required files, and — for organizations that need more — placement rules, required file groups, language-aware import boundaries for Go, JavaScript, TypeScript, and Python, and per-glob max-lines-per-file limits. Violations are reported through 14 frozen, machine-readable violation codes, so tooling and AI agents can key on `code` rather than parsing message text.
 
 ## What it checks
 
@@ -11,6 +11,7 @@ structlint is a CLI tool that checks a project's directory layout and file namin
 - **Placement rules**: e.g. "all `*.sql` files must live under `migrations/**`"
 - **Required groups**: e.g. "every `cmd/*` directory must contain a `main.go`"
 - **Import boundaries**: language-aware rules blocking cross-layer imports (Go, JS/TS, Python)
+- **File size limits**: max lines per file by glob (e.g. `**/*.py` at 300 lines), first matching rule wins, with excludes
 
 ## Ways to run it
 

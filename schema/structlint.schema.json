@@ -158,6 +158,40 @@
           "severity": { "$ref": "#/definitions/severity" }
         }
       }
+    },
+    "file_size": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "File-level size limits. Lines are counted like `wc -l` (number of newline characters). Binary files are skipped; the global ignore list applies.",
+      "properties": {
+        "rules": {
+          "type": "array",
+          "description": "Ordered limits. The FIRST rule whose pattern matches a file decides its limit; later rules are not consulted. Files matching no rule are not checked.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["pattern", "maxLines"],
+            "properties": {
+              "pattern": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Glob matched against the relative path or base name. A leading **/ also matches root-level files."
+              },
+              "maxLines": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Maximum allowed line count (inclusive)."
+              },
+              "severity": { "$ref": "#/definitions/severity" }
+            }
+          }
+        },
+        "exclude": {
+          "type": "array",
+          "description": "Globs for files never size-checked (e.g. tests, generated migrations, lockfiles).",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
     }
   },
   "definitions": {

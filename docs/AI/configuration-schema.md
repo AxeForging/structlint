@@ -16,6 +16,9 @@ file_naming_pattern:
 placement: []           # []PlacementRule - file placement contracts
 requiredGroups: []      # []RequiredGroup - one-of and per-directory requirements
 boundaries: []          # []BoundaryRule - import boundary contracts
+file_size:
+  rules: []             # []FileSizeRule - ordered, first match wins
+  exclude: []           # []string - glob patterns never size-checked
 ignore: []              # []string - exact paths or patterns
 ```
 
@@ -67,6 +70,19 @@ type BoundaryRule struct {
     From         string   `yaml:"from" json:"from"`
     CannotImport []string `yaml:"cannotImport" json:"cannotImport"`
     Severity     string   `yaml:"severity" json:"severity"`
+}
+
+// internal/config/filesize.go
+
+type FileSize struct {
+    Rules   []FileSizeRule `yaml:"rules" json:"rules"`
+    Exclude []string       `yaml:"exclude" json:"exclude"`
+}
+
+type FileSizeRule struct {
+    Pattern  string `yaml:"pattern" json:"pattern"`
+    MaxLines int    `yaml:"maxLines" json:"maxLines"`
+    Severity string `yaml:"severity" json:"severity"`
 }
 ```
 
@@ -184,6 +200,18 @@ boundaries:
   - id: domain-no-db
     from: "internal/domain/**"
     cannotImport: ["internal/db/**"]
+```
+
+### File Size
+
+**file_size**: Max lines per file by glob (`internal/validator/filesize.go`, code `file_too_long`). The first rule whose pattern matches decides the limit. Lines are counted like `wc -l` (number of `\n` bytes). Binary files (NUL in the first 8000 bytes), `exclude` matches and ignored paths are skipped. A leading `**/` also matches root files. Validation rejects `maxLines <= 0`, empty or invalid globs, and unknown severity.
+
+```yaml
+file_size:
+  rules:
+    - pattern: "**/*.py"
+      maxLines: 300
+  exclude: ["**/*_test.py"]
 ```
 
 ## JSON Report Schema

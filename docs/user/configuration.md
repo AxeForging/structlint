@@ -33,7 +33,10 @@ file_naming_pattern:
 
 placement: []           # Files that must live under specific directories
 requiredGroups: []      # One-of and per-directory required files
-boundaries: []          # Go import boundary rules
+boundaries: []          # Go/JS/TS/Python import boundary rules
+file_size:
+  rules: []             # Ordered max-lines-per-file limits by glob (first match wins)
+  exclude: []           # Files never size-checked
 ignore: []              # Paths to skip during validation
 ```
 
@@ -66,6 +69,7 @@ dir_structure:
 
 - String slices (`ignore`, `dir_structure.*`, `file_naming_pattern.*`) — parent entries first, then child entries not already present. Order stable, exact-string dedup.
 - `placement`, `requiredGroups`, `boundaries` — keyed by `id`. Same ID → child rule replaces the parent's wholesale. New IDs append.
+- `file_size.rules` — child rules first (first match wins), then parent rules whose `pattern` the child did not redeclare. `file_size.exclude` merges like other string slices.
 - Parents resolve depth-first. Chains are cycle-checked and capped at depth 10.
 
 **Compatibility warning:** the `extends` key requires structlint **v0.6.0 or newer**. Older binaries would strict-parse the file and reject it with `field extends not found in type config.Config` — a confusing error for the actual problem.
@@ -292,6 +296,55 @@ boundaries:
 ```
 
 For Go module imports, structlint reads `go.mod` and converts imports like `example.com/app/internal/db` to `internal/db` before matching `cannotImport`. For JS/TS relative imports, paths like `../db/client` are resolved relative to the importing file. For Python, dotted imports like `app.db.client` are normalized to `app/db/client`.
+
+## File Size Rules
+
+File-size rules cap how many lines a file may have. They are language-agnostic, so the same block works for Go, TypeScript and Python repositories. Function- or class-length limits need a language parser and stay in language linters (ruff, golangci-lint `funlen`, ESLint `max-lines-per-function`).
+
+```yaml
+# requires structlint >= v0.7.0
+file_size:
+  rules:                         # ordered — the FIRST matching rule wins
+    - pattern: "legacy/**"       # a looser limit must come before the broad rule
+      maxLines: 1500
+    - pattern: "**/*.py"
+      maxLines: 300
+    - pattern: "**/*.go"
+      maxLines: 500
+      severity: warning          # optional: error (default) | warning
+  exclude:                       # never size-checked
+    - "**/*_test.py"
+    - "**/migrations/versions/*.py"
+    - "**/*.lock"
+```
+
+| Field | Meaning |
+|-------|---------|
+| `rules[].pattern` | Glob matched against the file's relative path or base name, like `file_naming_pattern`. A leading `**/` also matches root-level files (`**/*.py` covers `main.py`). |
+| `rules[].maxLines` | Inclusive limit; a file with exactly `maxLines` lines passes. Must be greater than 0. |
+| `rules[].severity` | `error` (default) or `warning`. |
+| `exclude` | Globs for files never checked (tests, generated migrations, lockfiles). |
+
+**Precedence.** For each file, rules are tried in order and the first rule whose `pattern` matches decides the limit; later rules are never consulted. Put specific patterns before broad ones. Files that match no rule, or match `exclude`, are not checked.
+
+**Line counting** matches `wc -l`: structlint counts newline (`\n`) characters.
+
+- An empty file has 0 lines.
+- A last line without a trailing newline is **not** counted: `a\nb` has 1 line, the same as `wc -l` reports.
+- CRLF files count once per line (`\r\n` contains one `\n`); a lone `\r` is not a line break.
+
+**What is skipped:** paths in the global `ignore` list, files in `exclude`, binary files (a NUL byte in the first 8000 bytes, the same heuristic git uses), and non-regular files. `--changed-only` and `--staged` limit the check to changed files.
+
+A violation uses code `file_too_long`. Its `rule` is the matching pattern, and the message gives the count and the limit:
+
+```
+✗ File too long: app/service.py has 412 lines (max 300)
+::error file=app/service.py,title=file_too_long::File too long: app/service.py has 412 lines (max 300)
+```
+
+With `extends`, the child's rules go **first**, so a child can override a preset's limit for the same pattern. The parent's rule with that pattern is dropped, and the rest of the parent's rules follow in order. `exclude` lists are merged like every other string list.
+
+Older binaries reject the `file_size` key during strict parsing. Add the `# requires structlint >= v0.7.0` pragma so they fail with an "upgrade" message.
 
 ## Complete Example
 

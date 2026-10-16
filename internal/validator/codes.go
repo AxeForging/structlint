@@ -17,6 +17,7 @@ var CodeDescriptions = map[string]string{
 	"boundary_violation":           "Files importing paths forbidden by boundary rules",
 	"parse_error":                  "Source files whose imports could not be parsed",
 	"walk_error":                   "Filesystem errors encountered during validation",
+	"file_too_long":                "Files exceeding their maximum line count",
 }
 
 // DescribeCode returns the human description for a violation code, falling

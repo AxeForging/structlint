@@ -2,7 +2,7 @@ package validator
 
 import "testing"
 
-// TestCodeDescriptions_CoversAllEmittedCodes pins the exact 13 codes emitted
+// TestCodeDescriptions_CoversAllEmittedCodes pins the exact 14 codes emitted
 // by the current rule set. If a new rule adds a code without registering it
 // here, this test fails — that is intentional per spec 011's frozen-codes
 // contract.
@@ -21,6 +21,7 @@ func TestCodeDescriptions_CoversAllEmittedCodes(t *testing.T) {
 		"boundary_violation",
 		"parse_error",
 		"walk_error",
+		"file_too_long",
 	}
 	if len(CodeDescriptions) != len(want) {
 		t.Fatalf("CodeDescriptions has %d entries, want %d", len(CodeDescriptions), len(want))

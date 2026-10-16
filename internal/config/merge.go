@@ -156,6 +156,8 @@ func describeCycle(visited map[string]bool, revisit string) string {
 //     already present (exact-string dedup, order stable).
 //   - Placement/RequiredGroups/Boundaries → keyed by ID; same ID → child
 //     rule replaces the parent's wholesale; new IDs append.
+//   - FileSize → child rules first (first match wins), parent rules with a
+//     pattern the child redeclares are dropped; exclude is a dedup append.
 //   - Extends is consumed by the resolver and empty here.
 func mergeConfigs(parent, child *Config) *Config {
 	out := &Config{
@@ -173,6 +175,7 @@ func mergeConfigs(parent, child *Config) *Config {
 		Placement:      mergePlacement(parent.Placement, child.Placement),
 		RequiredGroups: mergeRequiredGroups(parent.RequiredGroups, child.RequiredGroups),
 		Boundaries:     mergeBoundaries(parent.Boundaries, child.Boundaries),
+		FileSize:       mergeFileSize(parent.FileSize, child.FileSize),
 	}
 	return out
 }

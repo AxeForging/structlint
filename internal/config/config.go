@@ -19,6 +19,7 @@ type Config struct {
 	Placement         []PlacementRule   `yaml:"placement" json:"placement"`
 	RequiredGroups    []RequiredGroup   `yaml:"requiredGroups" json:"requiredGroups"`
 	Boundaries        []BoundaryRule    `yaml:"boundaries" json:"boundaries"`
+	FileSize          FileSize          `yaml:"file_size" json:"file_size"`
 }
 
 // ExtendsList accepts either a single string or a list of strings. Each
@@ -185,5 +186,5 @@ func (c *Config) Validate() error {
 		}
 	}
 
-	return nil
+	return c.FileSize.validate()
 }

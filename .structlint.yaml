@@ -18,6 +18,7 @@ dir_structure:
     - "schema/**"           # JSON Schema for editor autocomplete
     - "skills/**"           # Shipped agent skill (SKILL.md)
     - "setup/**"            # Install-only GitHub Action
+    - "web/**"              # Marketing site (GitHub Pages)
   disallowedPaths:
     - "vendor/**"           # Vendor dependencies
     - "node_modules/**"     # Node.js dependencies
@@ -52,6 +53,11 @@ file_naming_pattern:
     - "*.png"
     - "*.jpg"
     - "*.svg"
+    
+    # Marketing site (web/)
+    - "*.html"
+    - "*.css"
+    - "*.xml"
     - "README*"
     - "LICENSE*"
     - "CHANGELOG*"
@@ -201,6 +207,13 @@ boundaries:
       - "internal/hooks/**"
       - "internal/infer/**"
     severity: error
+
+file_size:
+  rules:
+    - pattern: "**/*.go"
+      maxLines: 500
+  exclude:
+    - "**/*_test.go"        # table-driven integration tests run long by design
 
 ignore:
   # Version control
