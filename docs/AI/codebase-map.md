@@ -15,10 +15,13 @@ structlint/
 │   │   ├── version.go         # version command
 │   │   └── completion.go      # shell completion
 │   ├── config/config.go       # Config struct and loading
+│   ├── config/filesize.go     # file_size types, validation, extends merge
 │   ├── logging/logging.go     # slog-based logging setup
 │   └── validator/             # Core validation
 │       ├── validator.go       # ValidateDirStructure, ValidateFileNaming
 │       ├── types.go           # JSONReport struct
+│       ├── engine.go          # Rule registry (single-walk rules)
+│       ├── filesize.go        # file_size rule + wc -l compatible line counter
 │       └── summary.go         # PrintSummary, result formatting
 ├── test/                      # Integration tests
 │   ├── helpers_test.go        # buildBinary, runBinary helpers

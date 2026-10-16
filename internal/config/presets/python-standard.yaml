@@ -55,3 +55,14 @@ ignore:
   - "dist"
   - "build"
   - "*.egg-info"
+
+# Max lines per file (requires structlint >= v0.7.0). Uncomment to enable.
+# The first matching rule wins; lines are counted like `wc -l`.
+# file_size:
+#   rules:
+#     - pattern: "**/*.py"
+#       maxLines: 300
+#   exclude:
+#     - "**/test_*.py"
+#     - "**/*_test.py"
+#     - "**/migrations/versions/*.py"

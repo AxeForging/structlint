@@ -208,6 +208,13 @@ boundaries:
       - "internal/infer/**"
     severity: error
 
+file_size:
+  rules:
+    - pattern: "**/*.go"
+      maxLines: 500
+  exclude:
+    - "**/*_test.go"        # table-driven integration tests run long by design
+
 ignore:
   # Version control
   - ".git"

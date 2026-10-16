@@ -28,9 +28,10 @@ type RunContext struct {
 	Skip func(relPath string, isDir bool) bool
 }
 
-// Registry returns the seven rules in legacy execution order:
-// dir_structure, file_naming, required_paths, required_files,
-// placement, required_groups, boundaries.
+// Registry returns the rules in execution order: the seven legacy rules
+// (dir_structure, file_naming, required_paths, required_files, placement,
+// required_groups, boundaries) followed by file_size (spec 014), appended
+// last so the legacy order locked by the parity goldens is unchanged.
 func Registry(cfg *config.Config) []Rule {
 	return []Rule{
 		dirStructureRule{},
@@ -40,6 +41,7 @@ func Registry(cfg *config.Config) []Rule {
 		placementRule{},
 		requiredGroupsRule{},
 		boundariesRule{},
+		fileSizeRule{},
 	}
 }
 

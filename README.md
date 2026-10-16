@@ -105,6 +105,7 @@ structlint validate
 | Files drifting into the wrong layer | Enforce placement rules |
 | Packages missing local entrypoints/docs | Enforce required groups |
 | Cross-layer imports creeping in | Enforce Go, JS/TS, and Python boundaries |
+| Files growing into god-modules | Max lines per file by glob, any language |
 | AI tools placing files incorrectly | Clear structure rules for AI context |
 | CI/CD structural compliance | JSON/SARIF/GitHub reports + exit codes |
 
@@ -206,6 +207,30 @@ boundaries:
 ```
 
 Boundary rules are language-aware for Go, JavaScript, TypeScript, and Python imports. See [Configuration Reference](docs/user/configuration.md) and [CI/CD Integration](docs/user/ci-cd-integration.md).
+
+</details>
+
+<details>
+<summary><strong>File Size Limits</strong></summary>
+
+Cap lines per file by glob. Rules are ordered and the **first matching rule wins**. Lines are counted like `wc -l`, and binary and ignored files are skipped.
+
+```yaml
+# requires structlint >= v0.7.0
+file_size:
+  rules:
+    - pattern: "**/*.py"
+      maxLines: 300
+    - pattern: "**/*.go"
+      maxLines: 500
+  exclude: ["**/*_test.py", "**/migrations/versions/*.py", "**/*.lock"]
+```
+
+```
+✗ File too long: app/service.py has 412 lines (max 300)
+```
+
+This replaces ad-hoc `check-file-size.sh` scripts. Function- and class-length limits stay in language linters. For precedence, how a file without a trailing newline is counted, and `extends` behavior, see [File Size Rules](docs/user/configuration.md#file-size-rules).
 
 </details>
 
